@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["org", "title"],
+  "properties": {
+    "org": { "type": "string" },
+    "title": { "type": "string" },
+    "cloudflare": {
+      "type": "object",
+      "properties": {
+        "accountId": { "type": "string" },
+        "accountSlug": { "type": "string" }
+      }
+    },
+    "github": {
+      "type": "object",
+      "properties": {
+        "org": { "type": "string" },
+        "orgs": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+        "user": { "type": "string" },
+        "home": { "type": "string" },
+        "appHome": { "type": "string" }
+      },
+      "if": {
+        "properties": { "user": { "type": "string", "minLength": 1 } },
+        "required": ["user"]
+      },
+      "then": {
+        "properties": {
+          "org": { "type": "string", "maxLength": 0 },
+          "orgs": { "type": "string", "maxLength": 0 }
+        }
+      }
+    },
+    "lfs": {
+      "type": "object",
+      "properties": {
+        "server": { "type": "string" }
+      }
+    },
+    "s3": {
+      "type": "object",
+      "properties": {
+        "endpoint": { "type": "string" },
+        "bucket": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

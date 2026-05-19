@@ -1,0 +1,13 @@
+{
+  "title": "{{org}} Hub",
+  "banner": { "dark": "banner-dark.png", "light": "banner-light.png" },
+  "github": {
+    "home": "https://github.com/{{github.owner}}",
+    "appHome": "https://{{lfs.server}}"
+  },
+  "lfs": { "server": "lfs-server.{{cloudflare.accountSlug}}.workers.dev" },
+  "s3": {
+    "endpoint": "https://{{cloudflare.accountId}}.r2.cloudflarestorage.com",
+    "bucket": "lfs-objects"
+  }
+}
