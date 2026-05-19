@@ -1,0 +1,19 @@
+name: PR
+
+on:
+  pull_request:
+
+  workflow_dispatch: # Can run manually from the Actions tab
+
+jobs:
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Initialize
+        uses: ./.github/actions/init
+
+      - run: bunx vitest run
