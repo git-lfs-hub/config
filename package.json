@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "git-lfs-hub-config": "./cli.ts"
+    "git-lfs-hub-config": "./src/cli.ts"
   },
   "scripts": {
     "test": "vitest run",

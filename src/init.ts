@@ -10,7 +10,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadInputVars, loadDefaultVars, deepMerge, renderTemplateFile, validateSchema, writeJsonFile } from "./lib";
 
-const pkg = dirname(fileURLToPath(import.meta.url));
+const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export function init({ cwd, force }: { cwd: string; force: boolean }): void {
   const ws = resolve(cwd);

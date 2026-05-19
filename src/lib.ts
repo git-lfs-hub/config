@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 
 export const error = (msg: string): never => { throw new Error(msg); };
 
-export const optionalVars: Record<string, unknown> = JSON.parse(readFileSync(new URL("vars.optional.json", import.meta.url), "utf8"));
+export const optionalVars: Record<string, unknown> = JSON.parse(readFileSync(new URL("../vars.optional.json", import.meta.url), "utf8"));
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
