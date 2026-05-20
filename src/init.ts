@@ -40,8 +40,13 @@ export function init({ cwd, force }: { cwd: string; force: boolean }): void {
   validateSchema(vars, resolve(pkg, "vars.schema.json"));
   writeJsonFile(resolve(ws, "vars.json"), vars);
 
-  const render = (relIn: string, relOut: string): void {
-    renderTemplateFile(resolve(ws, relIn), resolve(ws, relOut), vars, inputPath);
+  function render(relIn: string, relOut: string): void {
+    renderTemplateFile(
+      resolve(ws, relIn),
+      resolve(ws, relOut),
+      vars,
+      inputPath,
+    );
   }
 
   if (force || !existsSync(resolve(ws, "wrangler.jsonc"))) {
