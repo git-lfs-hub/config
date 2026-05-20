@@ -2,7 +2,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import Ajv, { type AnySchema } from "ajv";
 import Handlebars from "handlebars";
 
-export const error = (msg: string): never => { throw new Error(msg); };
+export function error(msg: string): never {
+  throw new Error(msg);
+}
 
 export const optionalVars: Record<string, unknown> = JSON.parse(readFileSync(new URL("../vars.optional.json", import.meta.url), "utf8"));
 
