@@ -10,7 +10,7 @@ runs:
 
     - uses: actions/setup-node@v6
       with:
-        node-version-file: "server/package.json"
+        node-version-file: "package.json"
 
     - uses: oven-sh/setup-bun@v2
 
