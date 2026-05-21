@@ -60,21 +60,36 @@ describe("resolveVars", () => {
   test("default can reference another default via user var", () => {
     const vars = resolveVars(
       { cloudflare: { accountSlug: "acme" } },
-      { lfs: { server: "lfs.{{cloudflare.accountSlug}}.workers.dev" } },
+      {
+        cloudflare: { workerName: "lfs-server" },
+        lfs: { server: "{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev" },
+      },
     );
-    expect((vars.lfs as Record<string, unknown>).server).toBe("lfs.acme.workers.dev");
+    expect((vars.lfs as Record<string, unknown>).server).toBe("lfs-server.acme.workers.dev");
   });
 
   test("default can reference another default (chained)", () => {
     const vars = resolveVars(
       { cloudflare: { accountSlug: "acme" } },
       {
-        lfs: { server: "lfs.{{cloudflare.accountSlug}}.workers.dev" },
+        cloudflare: { workerName: "lfs-server" },
+        lfs: { server: "{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev" },
         github: { appHome: "https://{{lfs.server}}" },
       },
     );
-    expect((vars.lfs as Record<string, unknown>).server).toBe("lfs.acme.workers.dev");
-    expect((vars.github as Record<string, unknown>).appHome).toBe("https://lfs.acme.workers.dev");
+    expect((vars.lfs as Record<string, unknown>).server).toBe("lfs-server.acme.workers.dev");
+    expect((vars.github as Record<string, unknown>).appHome).toBe("https://lfs-server.acme.workers.dev");
+  });
+
+  test("cloudflare.workerName overrides default Worker hostname", () => {
+    const vars = resolveVars(
+      { cloudflare: { accountSlug: "acme", workerName: "lfs-server-staging" } },
+      {
+        cloudflare: { workerName: "lfs-server" },
+        lfs: { server: "{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev" },
+      },
+    );
+    expect((vars.lfs as Record<string, unknown>).server).toBe("lfs-server-staging.acme.workers.dev");
   });
 
   test("optional vars get empty-string defaults", () => {

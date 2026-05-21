@@ -17,5 +17,4 @@ rsync -ahi --out-format='sync %f -> docs/%f' assets/ docs/assets | awk '!/[/]\.?
 
 link server/wrangler.jsonc -sf ../wrangler.jsonc
 link server/worker-configuration.d.ts -sf ../worker-configuration.d.ts
-link server/vars.json -sf ../vars.json
 link server/public -sfn ../docs/site
