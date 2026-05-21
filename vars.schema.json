@@ -9,7 +9,8 @@
       "type": "object",
       "properties": {
         "accountId": { "type": "string" },
-        "accountSlug": { "type": "string" }
+        "accountSlug": { "type": "string" },
+        "workerName": { "type": "string" }
       }
     },
     "github": {
