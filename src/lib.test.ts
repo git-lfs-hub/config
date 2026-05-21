@@ -1,5 +1,8 @@
-import { describe, test, expect } from "vitest";
-import { normalizeValue, normalizeVars, renderTemplate, optionalVars } from "./lib";
+import { describe, test, expect, vi, afterAll, afterEach } from "vitest";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { normalizeValue, normalizeVars, renderTemplate, optionalVars, writeUtf8File } from "./lib";
 
 describe("normalize", () => {
   test("joins array with spaces", () => {
@@ -121,6 +124,40 @@ describe("renderTemplate", () => {
     const template = `"GITHUB_ORG": "{{github.org}}",\n"GITHUB_USER": "{{github.user}}"`;
     const out = renderTemplate(template, { github: { org: "myorg", user: "" } });
     expect(out).toBe(`"GITHUB_ORG": "myorg",\n"GITHUB_USER": ""`);
+  });
+});
+
+describe("writeUtf8File", () => {
+  const dir = mkdtempSync(join(tmpdir(), "writeUtf8File-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  afterEach(() => vi.restoreAllMocks());
+
+  test("creates file when missing", () => {
+    const p = join(dir, "new.txt");
+    writeUtf8File(p, "hello");
+    expect(readFileSync(p, "utf8")).toBe("hello");
+  });
+
+  test("overwrites when content differs", () => {
+    const p = join(dir, "diff.txt");
+    writeFileSync(p, "old", "utf8");
+    writeUtf8File(p, "new");
+    expect(readFileSync(p, "utf8")).toBe("new");
+  });
+
+  test("skips write when content matches existing", () => {
+    const p = join(dir, "same.txt");
+    writeFileSync(p, "hello", "utf8");
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    writeUtf8File(p, "hello");
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  test("logs when write occurs", () => {
+    const p = join(dir, "logged.txt");
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    writeUtf8File(p, "hello");
+    expect(log).toHaveBeenCalledWith(`Wrote ${p}`);
   });
 });
 

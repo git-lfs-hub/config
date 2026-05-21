@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import Ajv, { type AnySchema } from "ajv";
 import Handlebars from "handlebars";
 
@@ -129,8 +129,9 @@ export function writeJsonFile(path: string, data: unknown): void {
   writeUtf8File(path, JSON.stringify(data, null, 2) + "\n");
 }
 
-/** Writes a UTF-8 file and logs the path. */
+/** Writes a UTF-8 file and logs the path. Skips write if content unchanged. */
 export function writeUtf8File(path: string, content: string): void {
+  if (existsSync(path) && readFileSync(path, "utf8") === content) return;
   writeFileSync(path, content, "utf8");
   console.log(`Wrote ${path}`);
 }
