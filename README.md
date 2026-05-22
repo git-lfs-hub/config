@@ -9,8 +9,8 @@ For the bigger picture (what the stack does, the deploy flow, the other repos) s
 This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy) checkout via `bun run config`. You rarely need to work in this repo unless you are changing the schema or templates.
 
 1. **Clone [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy)** and run `bun install` at its root. That checkout wires this renderer into the Worker and [docs](https://github.com/git-lfs-hub/docs) workspaces.
-2. **Add your vars file**: copy `vars.input.example.json` from this package into the deploy root as `vars.input.json`, then edit your settings.
-3. **Render config**: from the deploy root:
+2. **Add your vars file**. Copy `vars.input.example.json` from this package into the deploy root as `vars.input.json`, then edit your settings.
+3. **Render config**. From the deploy root:
 
    ```sh
    bun run config                         # init (default)
