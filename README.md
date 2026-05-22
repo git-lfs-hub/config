@@ -33,7 +33,7 @@ Optional, filled from [`vars.template.json`](vars.template.json) when omitted fr
 
 | Var | Description | Populates |
 |:----|:------------|:----------|
-| `title` | [docs](https://github.com/git-lfs-hub/docs) site title. Shown in nav only with `logo` layout.<br>Default: `{{org}} Hub` | `docs/docmd.config.js` site title; available as `{{title}}` in doc templates |
+| `title` | Default: `{{org}} Hub` | [docs](https://github.com/git-lfs-hub/docs) site title |
 | `banner` | Wide nav docs image (`assets/`). Suppresses `title` text. Accepts `string` or `{ "dark": "...", "light": "..." }`.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | — |
 | `logo` | Compact docs nav image (`assets/`). Shows `title` beside it. Accepts `string` or `{ "dark": "...", "light": "..." }`. | — |
 | `lfs.server` | Public HTTPS hostname of deployed Worker. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.<br>Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev` | [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46) |
