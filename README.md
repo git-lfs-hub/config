@@ -26,16 +26,16 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 | `org` | GitHub org display name. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs). | [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7) |
 | `cloudflare.accountId` | Cloudflare account ID (numeric, from dashboard). | [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43) |
 | `cloudflare.accountSlug` | `*.workers.dev` subdomain prefix for your Workers account. | [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46) |
-| `github.org[s]` (either) | Active org members access mode (≤5). JSON array or space/comma-separated string. | [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47) |
-| `github.user` (or) | Single-user access mode. | [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51) |
+| `github.org[s]` -- either | Active org members access mode (≤5). JSON array or space/comma-separated string. | [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47) |
+| `github.user` -- or | Single-user access mode. | [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51) |
 
 Optional, filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
 | Var | Description | Populates |
 |:----|:------------|:----------|
 | `title` | Default: `{{org}} Hub` | [docs](https://github.com/git-lfs-hub/docs) site title |
-| `banner` (either) | Wide nav docs `assets/`image. Suppresses `title` text.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | — |
-| `logo` (or) | Compact docs nav `assets/`image. Shows `title` beside it.<br>Both `banner` and `logo` accepts `string` or `{ "dark": "...", "light": "..." }`. | — |
+| `banner` -- either | Wide nav docs `assets/`image. Suppresses `title` text.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | — |
+| `logo` -- or | Compact docs nav `assets/`image. Shows `title` beside it.<br>Both `banner` and `logo` accepts `string` or `{ "dark": "...", "light": "..." }`. | — |
 | `lfs.server` | Public HTTPS hostname of deployed Worker. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.<br>Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev` | [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46) |
 | `github.home` | GitHub profile URL shown in docs.<br>Default: `https://github.com/<org-or-user>` | — |
 | `github.appHome` | Worker public base URL. OAuth App homepage, callback base, web login redirect, and device-flow URLs.<br>Default: `https://{{lfs.server}}` | [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46), [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) |
