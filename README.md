@@ -4,48 +4,45 @@ The vars renderer for [Git LFS Hub](https://github.com/git-lfs-hub). Turns your 
 
 For the bigger picture (what the stack does, the deploy flow, the other repos) see the [org overview](https://github.com/git-lfs-hub).
 
-Invoked from a [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy) checkout as `bun run config` (which runs `bunx github:git-lfs-hub/config`). You rarely need to touch this repo directly unless you're changing the schema or templates.
+## Getting started
 
-## Usage
+This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy) checkout via `bun run config`. You rarely need to work in this repo unless you are changing the schema or templates.
 
-From a deploy checkout (one-shot, no install):
+1. **Clone [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy)** and run `bun install` at its root. That checkout wires this renderer into the Worker and docs workspaces.
+2. **Add your vars file** — Copy `vars.input.example.json` from this package into the deploy root as `vars.input.json`, then edit your settings.
+3. **Render config** — From the deploy root:
 
-```sh
-bunx github:git-lfs-hub/config         # init (default)
-bunx github:git-lfs-hub/config validate
-```
+   ```sh
+   bun run config                         # init (default)
+   bun run config validate
+   ```
 
-Or via the deploy root's `package.json` script:
-
-```sh
-bun run config
-```
+   `init` merges your input with package defaults, validates, and writes `vars.json`, `wrangler.jsonc`, and `github-app.md`. `validate` only checks an existing `vars.json`.
 
 ## Commands
 
-| Command | Action |
-|---------|--------|
-| (default) `init` | Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler.jsonc` (skipped if exists) and `github-app.md`. |
-| `validate` | Ajv-validate `vars.json` against the package schema. |
+### `init` (default)
 
-## Flags
+Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler.jsonc` (skipped if exists) and `github-app.md`.
 
-| Flag | Default | Applies to | Notes |
-|------|---------|------------|-------|
-| `--cwd <dir>` | `.` | both | Deploy checkout root. |
-| `--force` | off | `init` | Overwrite existing `wrangler.jsonc`. |
+- **`--cwd <dir>`** (default `.`) — Deploy checkout root.
+- **`--force`** (default off) — Overwrite existing `wrangler.jsonc`.
 
-## File contract (`cwd`)
+### `validate`
 
-| File | Direction | Notes |
-|------|-----------|-------|
-| `vars.input.json` | input (preferred) | User-edited; resume checkpoint. |
-| `vars.json` | input (fallback) and **always output** | Merged, validated config consumed by deploy. Idempotent on re-run. |
-| `server/wrangler.template.jsonc` | input | Handlebars source. |
-| `server/github-app.template.md` | input | Handlebars source. |
-| `wrangler.jsonc` | output | Created once unless `--force`. |
-| `github-app.md` | output | Regenerated every run. |
+Ajv-validate `vars.json` against the package schema.
 
-## Starter
+- **`--cwd <dir>`** (default `.`) — Deploy checkout root.
 
-Copy `vars.input.example.json` from this package into your deploy checkout as `vars.input.json` and edit.
+## Inputs
+
+- **`vars.input.json`** — User-edited; resume checkpoint.
+  - If missing, reads and updates **`vars.json`** in place.
+- **`server/wrangler.template.jsonc`** — Handlebars source.
+- **`server/github-app.template.md`** — Handlebars source.
+
+## Outputs
+
+- **`vars.json`** — Merged, validated config consumed by deploy. Idempotent on re-run.
+- **`wrangler.jsonc`** — Created once unless `--force`.
+- **`github-app.md`** — Regenerated every run.
