@@ -59,7 +59,7 @@ Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.i
   
     - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
   
-  - **`logo`**: compact docs nav image. Shows `title` beside it. Omit `banner` to use this layout.
+  - **`logo`**: compact docs nav image. Shows `title` beside it.
   
   - Both accept `string` (one filename for both themes) or `object`: `{ "dark": "...", "light": "..." }` per theme.
 
