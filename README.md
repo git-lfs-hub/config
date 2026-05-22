@@ -19,7 +19,7 @@ This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-
 
 ## Vars
 
-Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`](vars.template.json), validated against [`vars.schema.json`](vars.schema.json), and written to **`vars.json`** for the `wrangler.jsonc`, and `github-app.md`, [docs](https://github.com/git-lfs-hub/docs), and [e2e](https://github.com/git-lfs-hub/e2e).
+Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`](vars.template.json), validated against [`vars.schema.json`](vars.schema.json), and written to **`vars.json`** for the [`wrangler.jsonc`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc), [`github-app.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md), [docs](https://github.com/git-lfs-hub/docs), and [e2e](https://github.com/git-lfs-hub/e2e).
 
 ### Required
 
