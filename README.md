@@ -25,22 +25,30 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 - **`org`**: GitHub org display name. Used in docs. Populates [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
 
-- **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard). Populates [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
+- **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard).
 
-- **`cloudflare.accountSlug`**: `*.workers.dev` subdomain prefix for your Workers account. Populates [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
+  - Populates [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
+
+- **`cloudflare.accountSlug`**: `*.workers.dev` subdomain prefix for your Workers account. 
+
+  - Populates [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
 - GitHub access control, one of:
 
-  - **`github.org[s]`**: active org members access mode (≤5). Populates [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
+  - **`github.org[s]`**: active org members access mode (≤5)
+
     - A JSON array or space/comma-separated string.
+    - Populates [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
   
-  - **`github.user`**: single-user access mode. Populates [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
+  - **`github.user`**: single-user access mode
+
+    - Populates [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
 
 ### Optional
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-- **`title`**: docs site title
+- **`title`**: docs site title.
 
   - Default: `{{org}} Hub`
   - Populates `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
