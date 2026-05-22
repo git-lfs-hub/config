@@ -30,21 +30,21 @@ Edit **`vars.input.json`** at the deploy root. **`init`** deep-merges it with [`
 
 Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
 
-- **Populates:** `title` default (`{{org}} Hub`), `github.home` default
+- **Populates:** [`title` default](vars.template.json#L2) (`{{org}} Hub`), [`github.home` default](vars.template.json#L5)
 
 </details>
 
 <details>
 <summary><b><code>cloudflare.accountId</code></b> — Cloudflare account ID (numeric, from dashboard).</summary>
 
-- **Populates:** `s3.endpoint` default (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → `vars.S3_ENDPOINT`
+- **Populates:** [`s3.endpoint` default](vars.template.json#L10) (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
 </details>
 
 <details>
 <summary><b><code>cloudflare.accountSlug</code></b> — <code>*.workers.dev</code> subdomain prefix for your Workers account.</summary>
 
-- **Populates:** `lfs.server` default (`{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`) → `github.appHome` default → `vars.GITHUB_APP_HOME`
+- **Populates:** [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
 </details>
 
@@ -54,7 +54,7 @@ Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md
 A JSON array or space/comma-separated string.
 - Web UI: login requires active GitHub org membership in one of the listed orgs (checked via GitHub's membership API; pending invites are rejected).
 - LFS API: `/:owner/...` routes are served only when `:owner` matches a listed org; token is validated per-repo.
-- **Populates:** `vars.GITHUB_ORG` (single org) or `vars.GITHUB_ORGS` (multiple, space-separated)
+- **Populates:** [`vars.GITHUB_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47) (single org) or [`vars.GITHUB_ORGS`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L49) (multiple, space-separated)
 
 </details>
 
@@ -63,7 +63,7 @@ A JSON array or space/comma-separated string.
 
 - Web UI: login is restricted to that GitHub username (case-insensitive).
 - LFS API: only `/:user/...` routes are served.
-- **Populates:** `vars.GITHUB_USER`
+- **Populates:** [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
 
 </details>
 
@@ -103,7 +103,7 @@ Docs nav branding (`assets/`):
 Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
 
 - **Default:** —
-- **Populates:** `vars.SENTRY_ORG`
+- **Populates:** [`vars.SENTRY_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L53)
 
 </details>
 
@@ -117,7 +117,7 @@ Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.i
 Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
 
 - **Default:** `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
-- **Populates:** `github.appHome` default → `vars.GITHUB_APP_HOME`; available as `{{lfs.server}}` in doc templates
+- **Populates:** [`github.appHome` default](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
 
 </details>
 
@@ -125,7 +125,7 @@ Used throughout docs (credential helper examples, `gh auth setup-git -h …`) an
 <summary><b><code>cloudflare.workerName</code></b> — Worker script identifier in the Cloudflare dashboard.</summary>
 
 - **Default:** `lfs-server`
-- **Populates:** `wrangler.jsonc` → `name`; `lfs.server` default
+- **Populates:** [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server` default](vars.template.json#L8)
 
 </details>
 
@@ -135,7 +135,7 @@ Used throughout docs (credential helper examples, `gh auth setup-git -h …`) an
 Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 
 - **Default:** `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
-- **Populates:** `vars.S3_ENDPOINT`
+- **Populates:** [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
 </details>
 
@@ -145,7 +145,7 @@ Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 Binding and presign must match. Staging CI appends `-staging`.
 
 - **Default:** `lfs-objects`
-- **Populates:** `vars.S3_BUCKET_NAME`, `r2_buckets.LFS_BUCKET.bucket_name`
+- **Populates:** [`vars.S3_BUCKET_NAME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L44), [`r2_buckets.LFS_BUCKET.bucket_name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L25)
 
 </details>
 
@@ -162,7 +162,7 @@ Binding and presign must match. Staging CI appends `-staging`.
 OAuth App homepage, callback base, web login redirect, and device-flow URLs.
 
 - **Default:** `https://{{lfs.server}}`
-- **Populates:** `vars.GITHUB_APP_HOME`; `github-app.md` (Homepage URL and callback base)
+- **Populates:** [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); `github-app.md` (Homepage URL and callback base)
 
 </details>
 
