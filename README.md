@@ -19,11 +19,162 @@ This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-
 
    `init` merges your input with package defaults, validates, and writes `vars.json`, `wrangler.jsonc`, and `github-app.md`. `validate` only checks an existing `vars.json`.
 
+## Vars
+
+Edit **`vars.input.json`** at the deploy root. **`init`** deep-merges it with [`vars.template.json`](vars.template.json) (Handlebars defaults), normalizes GitHub fields, validates against [`vars.schema.json`](vars.schema.json), and writes **`vars.json`** for the Worker, docs, and e2e.
+
+### Required
+
+<details>
+<summary>**`org`** — GitHub org display name.</summary>
+
+Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
+
+- **Populates:** `title` default (`{{org}} Hub`), `github.home` default
+
+</details>
+
+<details>
+<summary>**`cloudflare.accountId`** — Cloudflare account ID (numeric, from dashboard).</summary>
+
+- **Populates:** `s3.endpoint` default (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → `vars.S3_ENDPOINT`
+
+</details>
+
+<details>
+<summary>**`cloudflare.accountSlug`** — `*.workers.dev` subdomain prefix for your Workers account.</summary>
+
+- **Populates:** `lfs.server` default (`{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`) → `github.appHome` default → `vars.GITHUB_APP_HOME`
+
+</details>
+
+<details>
+<summary>Either: **`github.org[s]`** — Org access mode (≤5).</summary>
+
+A JSON array or space/comma-separated string.
+- Web UI: login requires active GitHub org membership in one of the listed orgs (checked via GitHub's membership API; pending invites are rejected).
+- LFS API: `/:owner/...` routes are served only when `:owner` matches a listed org; token is validated per-repo.
+- **Populates:** `vars.GITHUB_ORG` (single org) or `vars.GITHUB_ORGS` (multiple, space-separated)
+
+</details>
+
+<details>
+<summary>Or: **`github.user`** — Single-user access mode.</summary>
+
+- Web UI: login is restricted to that GitHub username (case-insensitive).
+- LFS API: only `/:user/...` routes are served.
+- **Populates:** `vars.GITHUB_USER`
+
+</details>
+
+### Optional
+
+<details>
+<summary>**`title`** — Docs site title.</summary>
+
+- **Default:** `{{org}} Hub`
+- **Populates:** `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
+
+</details>
+
+Docs nav branding (`assets/`):
+
+<details>
+<summary>**`banner`** (default) — Wide nav docs image. Suppresses `title` text.</summary>
+
+- **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
+- **Default:** `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
+- **Populates:** `docs/docmd.config.js` logo config (dark/light paths from `assets/`)
+
+</details>
+
+<details>
+<summary>**`logo`** — Compact docs nav image. Shows `title` beside it.</summary>
+
+- Omit `banner` to use this layout.
+- **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
+- **Populates:** `docs/docmd.config.js` logo config (used when `banner` is absent)
+
+</details>
+
+<details>
+<summary>**`sentry.org`** — Sentry organization slug.</summary>
+
+Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
+
+- **Default:** —
+- **Populates:** `vars.SENTRY_ORG`
+
+</details>
+
+### Defaults
+
+Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
+
+<details>
+<summary>**`lfs.server`** — Public HTTPS hostname of the deployed Worker.</summary>
+
+Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
+
+- **Default:** `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
+- **Populates:** `github.appHome` default → `vars.GITHUB_APP_HOME`; available as `{{lfs.server}}` in doc templates
+
+</details>
+
+<details>
+<summary>**`cloudflare.workerName`** — Worker script identifier in the Cloudflare dashboard.</summary>
+
+- **Default:** `lfs-server`
+- **Populates:** `wrangler.jsonc` → `name`; `lfs.server` default
+
+</details>
+
+<details>
+<summary>**`s3.endpoint`** — R2 S3 API endpoint.</summary>
+
+Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
+
+- **Default:** `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
+- **Populates:** `vars.S3_ENDPOINT`
+
+</details>
+
+<details>
+<summary>**`s3.bucket`** — R2 bucket for LFS objects.</summary>
+
+Binding and presign must match. Staging CI appends `-staging`.
+
+- **Default:** `lfs-objects`
+- **Populates:** `vars.S3_BUCKET_NAME`, `r2_buckets.LFS_BUCKET.bucket_name`
+
+</details>
+
+<details>
+<summary>**`github.home`** — GitHub profile URL shown in docs.</summary>
+
+- **Default:** `https://github.com/<org-or-user>`
+
+</details>
+
+<details>
+<summary>**`github.appHome`** — Worker public base URL.</summary>
+
+OAuth App homepage, callback base, web login redirect, and device-flow URLs.
+
+- **Default:** `https://{{lfs.server}}`
+- **Populates:** `vars.GITHUB_APP_HOME`; `github-app.md` (Homepage URL and callback base)
+
+</details>
+
+### Extra keys
+
+Extra keys are allowed (`additionalProperties: true`) and pass through to templates and docs.
+
 ## Commands
 
 ### `init` (default)
 
-Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler.jsonc` (skipped if exists) and `github-app.md`.
+Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler.jsonc` (skipped if it exists) and `github-app.md`.
 
 - **`--cwd <dir>`** (default `.`) — Deploy checkout root.
 - **`--force`** (default off) — Overwrite existing `wrangler.jsonc`.
@@ -36,8 +187,8 @@ Ajv-validate `vars.json` against the package schema.
 
 ## Inputs
 
-- **`vars.input.json`** — User-edited; resume checkpoint.
-  - If missing, reads and updates **`vars.json`** in place.
+- **`vars.input.json`** — User-edited; the primary input and resumption checkpoint.
+  - If missing, falls back to **`vars.json`** as input source (still re-merged, re-validated, and rewritten).
 - **`server/wrangler.template.jsonc`** — Handlebars source.
 - **`server/github-app.template.md`** — Handlebars source.
 
