@@ -23,7 +23,7 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 ### Required
 
-- **`org`**: GitHub org display name. Used in docs. Populates [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
+- **`org`**: GitHub org display name. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs). Populates [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
 
 - **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard).
 
@@ -48,16 +48,14 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-- **`title`**: docs site title.
+- **`title`**: [docs](https://github.com/git-lfs-hub/docs) site title.
 
   - Default: `{{org}} Hub`
   - Populates `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
 
 - Docs nav branding (`assets/`). One of:
   
-  - **`banner`** (default): wide nav docs image. Suppresses `title` text.
-  
-    - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
+  - **`banner`** (default): wide nav docs image. Suppresses `title` text. Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
   
   - **`logo`**: compact docs nav image. Shows `title` beside it.
   
