@@ -21,7 +21,7 @@ This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-
 
 Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`](vars.template.json), validated against [`vars.schema.json`](vars.schema.json), and written to **`vars.json`** for the [`wrangler.jsonc`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc), [`github-app.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md), [docs](https://github.com/git-lfs-hub/docs), and [e2e](https://github.com/git-lfs-hub/e2e).
 
-### Required
+Required
 
 | Var | Description | Populates |
 |-----|-------------|-----------|
@@ -31,9 +31,7 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 | `github.org[s]` (either) | Active org members access mode (≤5). JSON array or space/comma-separated string. | [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47) |
 | `github.user` (or) | Single-user access mode. | [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51) |
 
-### Optional
-
-Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
+Optional. Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
 | Var | Description | Populates |
 |:----|:------------|:----------|
