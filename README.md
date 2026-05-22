@@ -26,7 +26,7 @@ Edit **`vars.input.json`** at the deploy root. **`init`** deep-merges it with [`
 ### Required
 
 <details>
-<summary>**`org`** — GitHub org display name.</summary>
+<summary><b><code>org</code></b> — GitHub org display name.</summary>
 
 Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
 
@@ -35,21 +35,21 @@ Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md
 </details>
 
 <details>
-<summary>**`cloudflare.accountId`** — Cloudflare account ID (numeric, from dashboard).</summary>
+<summary><b><code>cloudflare.accountId</code></b> — Cloudflare account ID (numeric, from dashboard).</summary>
 
 - **Populates:** `s3.endpoint` default (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → `vars.S3_ENDPOINT`
 
 </details>
 
 <details>
-<summary>**`cloudflare.accountSlug`** — `*.workers.dev` subdomain prefix for your Workers account.</summary>
+<summary><b><code>cloudflare.accountSlug</code></b> — <code>*.workers.dev</code> subdomain prefix for your Workers account.</summary>
 
 - **Populates:** `lfs.server` default (`{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`) → `github.appHome` default → `vars.GITHUB_APP_HOME`
 
 </details>
 
 <details>
-<summary>Either: **`github.org[s]`** — Org access mode (≤5).</summary>
+<summary>Either: <b><code>github.org[s]</code></b> — Org access mode (≤5).</summary>
 
 A JSON array or space/comma-separated string.
 - Web UI: login requires active GitHub org membership in one of the listed orgs (checked via GitHub's membership API; pending invites are rejected).
@@ -59,7 +59,7 @@ A JSON array or space/comma-separated string.
 </details>
 
 <details>
-<summary>Or: **`github.user`** — Single-user access mode.</summary>
+<summary>Or: <b><code>github.user</code></b> — Single-user access mode.</summary>
 
 - Web UI: login is restricted to that GitHub username (case-insensitive).
 - LFS API: only `/:user/...` routes are served.
@@ -70,7 +70,7 @@ A JSON array or space/comma-separated string.
 ### Optional
 
 <details>
-<summary>**`title`** — Docs site title.</summary>
+<summary><b><code>title</code></b> — Docs site title.</summary>
 
 - **Default:** `{{org}} Hub`
 - **Populates:** `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
@@ -80,7 +80,7 @@ A JSON array or space/comma-separated string.
 Docs nav branding (`assets/`):
 
 <details>
-<summary>**`banner`** (default) — Wide nav docs image. Suppresses `title` text.</summary>
+<summary><b><code>banner</code></b> (default) — Wide nav docs image. Suppresses <code>title</code> text.</summary>
 
 - **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
 - **Default:** `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
@@ -89,7 +89,7 @@ Docs nav branding (`assets/`):
 </details>
 
 <details>
-<summary>**`logo`** — Compact docs nav image. Shows `title` beside it.</summary>
+<summary><b><code>logo</code></b> — Compact docs nav image. Shows <code>title</code> beside it.</summary>
 
 - Omit `banner` to use this layout.
 - **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
@@ -98,7 +98,7 @@ Docs nav branding (`assets/`):
 </details>
 
 <details>
-<summary>**`sentry.org`** — Sentry organization slug.</summary>
+<summary><b><code>sentry.org</code></b> — Sentry organization slug.</summary>
 
 Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
 
@@ -112,7 +112,7 @@ Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
 <details>
-<summary>**`lfs.server`** — Public HTTPS hostname of the deployed Worker.</summary>
+<summary><b><code>lfs.server</code></b> — Public HTTPS hostname of the deployed Worker.</summary>
 
 Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
 
@@ -122,7 +122,7 @@ Used throughout docs (credential helper examples, `gh auth setup-git -h …`) an
 </details>
 
 <details>
-<summary>**`cloudflare.workerName`** — Worker script identifier in the Cloudflare dashboard.</summary>
+<summary><b><code>cloudflare.workerName</code></b> — Worker script identifier in the Cloudflare dashboard.</summary>
 
 - **Default:** `lfs-server`
 - **Populates:** `wrangler.jsonc` → `name`; `lfs.server` default
@@ -130,7 +130,7 @@ Used throughout docs (credential helper examples, `gh auth setup-git -h …`) an
 </details>
 
 <details>
-<summary>**`s3.endpoint`** — R2 S3 API endpoint.</summary>
+<summary><b><code>s3.endpoint</code></b> — R2 S3 API endpoint.</summary>
 
 Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 
@@ -140,7 +140,7 @@ Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 </details>
 
 <details>
-<summary>**`s3.bucket`** — R2 bucket for LFS objects.</summary>
+<summary><b><code>s3.bucket</code></b> — R2 bucket for LFS objects.</summary>
 
 Binding and presign must match. Staging CI appends `-staging`.
 
@@ -150,14 +150,14 @@ Binding and presign must match. Staging CI appends `-staging`.
 </details>
 
 <details>
-<summary>**`github.home`** — GitHub profile URL shown in docs.</summary>
+<summary><b><code>github.home</code></b> — GitHub profile URL shown in docs.</summary>
 
 - **Default:** `https://github.com/<org-or-user>`
 
 </details>
 
 <details>
-<summary>**`github.appHome`** — Worker public base URL.</summary>
+<summary><b><code>github.appHome</code></b> — Worker public base URL.</summary>
 
 OAuth App homepage, callback base, web login redirect, and device-flow URLs.
 
