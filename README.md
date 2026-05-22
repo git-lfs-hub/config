@@ -21,8 +21,8 @@ This package is meant to run from a [git-lfs-hub/deploy](https://github.com/git-
 
 Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`](vars.template.json), validated against [`vars.schema.json`](vars.schema.json), and written to **`vars.json`** for the [`wrangler.jsonc`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc), [`github-app.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md), [docs](https://github.com/git-lfs-hub/docs), and [e2e](https://github.com/git-lfs-hub/e2e):
 
-| Var | Description | Populates |
-|:----|:------------|:----------|
+| Var | Description | Used in |
+|:----|:------------|:--------|
 | `org` | GitHub org display name | [docs](https://github.com/git-lfs-hub/docs/tree/main/docs), [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7) |
 | `cloudflare.accountId` | Cloudflare account ID (numeric, from dashboard). | [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43) |
 | `cloudflare.accountSlug` | `*.workers.dev` subdomain prefix for your Workers account. | [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46) |
@@ -31,8 +31,8 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 Optional, filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-| Var | Description | Populates |
-|:----|:------------|:----------|
+| Var | Description | Used in |
+|:----|:------------|:--------|
 | `title` | Default: `{{org}} Hub` | [docs](https://github.com/git-lfs-hub/docs) site title |
 | `banner` -- either | Wide nav docs `assets/`image. Suppresses `title` text.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | — |
 | `logo` -- or | Compact docs nav `assets/`image. Shows `title` beside it.<br>Both `banner` and `logo` accepts `string` or `{ "dark": "...", "light": "..." }`. | — |
