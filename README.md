@@ -25,146 +25,100 @@ Edit **`vars.input.json`** at the deploy root. **`init`** deep-merges it with [`
 
 ### Required
 
-<details>
-<summary><b><code>org</code></b> — GitHub org display name.</summary>
+- **`org`** — GitHub org display name
 
-Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
+  Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
 
-- **Populates:** [`title`](vars.template.json#L2) (`{{org}} Hub`), [`github.home`](vars.template.json#L5)
+  - Populates: [`title`](vars.template.json#L2) (`{{org}} Hub`), [`github.home`](vars.template.json#L5)
 
-</details>
+- **`cloudflare.accountId`** — Cloudflare account ID (numeric, from dashboard)
 
-<details>
-<summary><b><code>cloudflare.accountId</code></b> — Cloudflare account ID (numeric, from dashboard).</summary>
+  - Populates: [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
-- **Populates:** [`s3.endpoint`](vars.template.json#L10) (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
+- **`cloudflare.accountSlug`** — `*.workers.dev` subdomain prefix for your Workers account
 
-</details>
+  - Populates: [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
-<details>
-<summary><b><code>cloudflare.accountSlug</code></b> — <code>*.workers.dev</code> subdomain prefix for your Workers account.</summary>
+- Either: **`github.org[s]`** — Org access mode (≤5)
 
-- **Populates:** [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
+  - Access is restricted to active org members
+  - `github.orgs` is a JSON array or space/comma-separated string
+  - Populates: [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
 
-</details>
+- Or: **`github.user`** — Single-user access mode
 
-<details>
-<summary>Either: <b><code>github.org[s]</code></b> — Org access mode (≤5).</summary>
-
-A JSON array or space/comma-separated string.
-- Web UI: login requires active GitHub org membership in one of the listed orgs (checked via GitHub's membership API; pending invites are rejected).
-- LFS API: `/:owner/...` routes are served only when `:owner` matches a listed org; token is validated per-repo.
-- **Populates:** [`vars.GITHUB_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47) (single org) or [`vars.GITHUB_ORGS`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L49) (multiple, space-separated)
-
-</details>
-
-<details>
-<summary>Or: <b><code>github.user</code></b> — Single-user access mode.</summary>
-
-- Web UI: login is restricted to that GitHub username (case-insensitive).
-- LFS API: only `/:user/...` routes are served.
-- **Populates:** [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
-
-</details>
+  - Access is restricted to that GitHub username
+  - Populates: [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
 
 ### Optional
 
-<details>
-<summary><b><code>title</code></b> — Docs site title.</summary>
+- **`title`** — Docs site title
 
-- **Default:** `{{org}} Hub`
-- **Populates:** `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
-
-</details>
+  - Default: `{{org}} Hub`
+  - Populates: `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`)
 
 Docs nav branding (`assets/`):
 
-<details>
-<summary><b><code>banner</code></b> (default) — Wide nav docs image. Suppresses <code>title</code> text.</summary>
+- **`banner`** (default) — Wide nav docs image. Suppresses `title` text
 
-- **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
-- **Default:** `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
-- **Populates:** `docs/docmd.config.js` logo config (dark/light paths from `assets/`)
+  - `string`: one filename for both themes; 
+  - `object: `{ "dark": "...", "light": "..." }` per theme
+  - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
 
-</details>
+- **`logo`** — Compact docs nav image. Shows `title` beside it
 
-<details>
-<summary><b><code>logo</code></b> — Compact docs nav image. Shows <code>title</code> beside it.</summary>
+  - Omit `banner` to use this layout
+  - `string`: one filename for both themes; 
+  - `object`: `{ "dark": "...", "light": "..." }` per theme
 
-- Omit `banner` to use this layout.
-- **string** — one filename for both themes; **object** — `{ "dark": "...", "light": "..." }` per theme.
-- **Populates:** `docs/docmd.config.js` logo config (used when `banner` is absent)
+Sentry configuration:
 
-</details>
+- **`sentry.org`** — Sentry organization slug
 
-<details>
-<summary><b><code>sentry.org</code></b> — Sentry organization slug.</summary>
+  Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
 
-Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
-
-- **Default:** —
-- **Populates:** [`vars.SENTRY_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L53)
-
-</details>
+  - Populates: [`vars.SENTRY_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L53)
 
 ### Defaults
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-<details>
-<summary><b><code>lfs.server</code></b> — Public HTTPS hostname of the deployed Worker.</summary>
+- **`lfs.server`** — Public HTTPS hostname of the deployed Worker
 
-Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
+  Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
 
-- **Default:** `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
-- **Populates:** [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
+  - Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
+  - Populates: [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
 
-</details>
+- **`cloudflare.workerName`** — Worker script identifier in the Cloudflare dashboard
 
-<details>
-<summary><b><code>cloudflare.workerName</code></b> — Worker script identifier in the Cloudflare dashboard.</summary>
+  - Default: `lfs-server`
+  - Populates: [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
 
-- **Default:** `lfs-server`
-- **Populates:** [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
+- **`s3.endpoint`** — R2 S3 API endpoint
 
-</details>
+  Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 
-<details>
-<summary><b><code>s3.endpoint</code></b> — R2 S3 API endpoint.</summary>
+  - Default: `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
+  - Populates: [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
-Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
+- **`s3.bucket`** — R2 bucket for LFS objects
 
-- **Default:** `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
-- **Populates:** [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
+  Binding and presign must match. Staging CI appends `-staging`.
 
-</details>
+  - Default: `lfs-objects`
+  - Populates: [`vars.S3_BUCKET_NAME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L44), [`r2_buckets.LFS_BUCKET.bucket_name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L25)
 
-<details>
-<summary><b><code>s3.bucket</code></b> — R2 bucket for LFS objects.</summary>
+- **`github.home`** — GitHub profile URL shown in docs
 
-Binding and presign must match. Staging CI appends `-staging`.
+  - Default: `https://github.com/<org-or-user>`
 
-- **Default:** `lfs-objects`
-- **Populates:** [`vars.S3_BUCKET_NAME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L44), [`r2_buckets.LFS_BUCKET.bucket_name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L25)
+- **`github.appHome`** — Worker public base URL
 
-</details>
+  OAuth App homepage, callback base, web login redirect, and device-flow URLs.
 
-<details>
-<summary><b><code>github.home</code></b> — GitHub profile URL shown in docs.</summary>
-
-- **Default:** `https://github.com/<org-or-user>`
-
-</details>
-
-<details>
-<summary><b><code>github.appHome</code></b> — Worker public base URL.</summary>
-
-OAuth App homepage, callback base, web login redirect, and device-flow URLs.
-
-- **Default:** `https://{{lfs.server}}`
-- **Populates:** [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); `github-app.md` (Homepage URL and callback base)
-
-</details>
+  - Default: `https://{{lfs.server}}`
+  - Populates: [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); `github-app.md` (Homepage URL and callback base)
 
 ### Extra keys
 
@@ -181,7 +135,7 @@ Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults
 
 ### `validate`
 
-Ajv-validate `vars.json` against the package schema.
+Validate `vars.json` against the package schema.
 
 - **`--cwd <dir>`** (default `.`) — Deploy checkout root.
 
