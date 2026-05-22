@@ -49,6 +49,8 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 ### Optional
 
+Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
+
 - **`title`**: docs site title
 
   - Default: `{{org}} Hub`
@@ -63,10 +65,6 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
   - **`logo`**: compact docs nav image. Shows `title` beside it. Omit `banner` to use this layout.
   
   - Both accept `string` (one filename for both themes) or `object`: `{ "dark": "...", "light": "..." }` per theme.
-
-### Defaults
-
-Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
 - **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used throughout [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
 
