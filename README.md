@@ -25,32 +25,27 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 - **`org`**: GitHub org display name. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs). Populates [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
 
-- **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard).
+- **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard).<br>
+  Populates [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
-  - Populates [`s3.endpoint`](vars.template.json#L10) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
-
-- **`cloudflare.accountSlug`**: `*.workers.dev` subdomain prefix for your Workers account.
-
-  - Populates [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
+- **`cloudflare.accountSlug`**: `*.workers.dev` subdomain prefix for your Workers account.<br>
+  Populates [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
 GitHub access control, one of:
 
-- **`github.org[s]`**: active org members access mode (≤5). A JSON array or space/comma-separated string.
+- **`github.org[s]`**: active org members access mode (≤5). A JSON array or space/comma-separated string.<br>
+  Populates [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
 
-  - Populates [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
-
-- **`github.user`**: single-user access mode
-
-  - Populates [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
+- **`github.user`**: single-user access mode<br>
+  Populates [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
 
 ### Optional
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-- **`title`**: [docs](https://github.com/git-lfs-hub/docs) site title.
-
-  - Default: `{{org}} Hub`
-  - Populates `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
+- **`title`**: [docs](https://github.com/git-lfs-hub/docs) site title.<br>
+  Default: `{{org}} Hub`<br>
+  Populates `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
 
 Docs nav branding (`assets/`). One of:
 
@@ -60,24 +55,20 @@ Docs nav branding (`assets/`). One of:
 
 - Both accept `string` (one filename for both themes) or `object`: `{ "dark": "...", "light": "..." }` per theme.
 
-- **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
+- **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.<br>
+  Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`<br>
+  Populates [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
-  - Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
-  - Populates [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
+- **`github.home`**: GitHub profile URL shown in docs.<br>
+  Default: `https://github.com/<org-or-user>`
 
-- **`github.home`**: GitHub profile URL shown in docs.
+- **`github.appHome`**: Worker public base URL. OAuth App homepage, callback base, web login redirect, and device-flow URLs.<br>
+  Default: `https://{{lfs.server}}`<br>
+  Populates [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46), [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) (Homepage URL and [callback URL](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L19))
 
-  - Default: `https://github.com/<org-or-user>`
-
-- **`github.appHome`**: Worker public base URL. OAuth App homepage, callback base, web login redirect, and device-flow URLs.
-
-  - Default: `https://{{lfs.server}}`
-  - Populates [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46), [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) (Homepage URL and [callback URL](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L19))
-
-- **`cloudflare.workerName`**: Worker script identifier in the Cloudflare dashboard.
-
-  - Default: `lfs-server`
-  - Populates [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
+- **`cloudflare.workerName`**: Worker script identifier in the Cloudflare dashboard.<br>
+  Default: `lfs-server`<br>
+  Populates [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
 
 - **`s3.endpoint`**: R2 S3 API endpoint for presigned upload/download URLs (direct client access).
 
