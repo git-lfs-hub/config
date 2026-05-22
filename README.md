@@ -23,9 +23,8 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 ### Required
 
-- **`org`**: GitHub org display name
+- **`org`**: GitHub org display name. Used in docs.
 
-  - Used in docs.
   - Populates: [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
 
 - **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard)
