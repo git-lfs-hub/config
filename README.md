@@ -34,8 +34,8 @@ Optional, filled from [`vars.template.json`](vars.template.json) when omitted fr
 | Var | Description | Used in |
 |:----|:------------|:--------|
 | `title` | Default: `{{org}} Hub` | [docs](https://github.com/git-lfs-hub/docs) site title |
-| `banner` -- either | Wide nav docs `assets/`image. Suppresses `title` text.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | — |
-| `logo` -- or | Compact docs nav `assets/`image. Shows `title` beside it.<br>Both `banner` and `logo` accepts `string` or `{ "dark": "...", "light": "..." }`. | — |
+| `banner` -- either | Wide nav docs `assets/`image. Suppresses `title` text.<br>Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }` | [docsmd.config](https://github.com/git-lfs-hub/docs/blob/main/docmd.config.js#L21) |
+| `logo` -- or | Compact docs nav `assets/`image. Shows `title` beside it.<br>Both `banner` and `logo` accepts `string` or `{ "dark": "...", "light": "..." }`. | [docsmd.config](https://github.com/git-lfs-hub/docs/blob/main/docmd.config.js#L21) |
 | `lfs.server` | Public HTTPS hostname of deployed Worker.<br>Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev` | [docs](https://github.com/git-lfs-hub/docs/tree/main/docs), [e2e](https://github.com/git-lfs-hub/e2e) smoke tests. [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46) |
 | `github.home` | GitHub profile URL shown in docs.<br>Default: `https://github.com/<org-or-user>` | — |
 | `github.appHome` | Worker public base URL. OAuth App homepage, callback base, web login redirect, and device-flow URLs.<br>Default: `https://{{lfs.server}}` | [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46), [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) |
