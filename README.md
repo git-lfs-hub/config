@@ -30,14 +30,14 @@ Edit **`vars.input.json`** at the deploy root. **`init`** deep-merges it with [`
 
 Appears throughout docs as `{{org}}` and as the OAuth App name in `github-app.md`.
 
-- **Populates:** [`title` default](vars.template.json#L2) (`{{org}} Hub`), [`github.home` default](vars.template.json#L5)
+- **Populates:** [`title`](vars.template.json#L2) (`{{org}} Hub`), [`github.home`](vars.template.json#L5)
 
 </details>
 
 <details>
 <summary><b><code>cloudflare.accountId</code></b> — Cloudflare account ID (numeric, from dashboard).</summary>
 
-- **Populates:** [`s3.endpoint` default](vars.template.json#L10) (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
+- **Populates:** [`s3.endpoint`](vars.template.json#L10) (`https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`) → [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
 </details>
 
@@ -117,7 +117,7 @@ Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.i
 Used throughout docs (credential helper examples, `gh auth setup-git -h …`) and e2e smoke tests.
 
 - **Default:** `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
-- **Populates:** [`github.appHome` default](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
+- **Populates:** [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
 
 </details>
 
@@ -125,7 +125,7 @@ Used throughout docs (credential helper examples, `gh auth setup-git -h …`) an
 <summary><b><code>cloudflare.workerName</code></b> — Worker script identifier in the Cloudflare dashboard.</summary>
 
 - **Default:** `lfs-server`
-- **Populates:** [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server` default](vars.template.json#L8)
+- **Populates:** [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
 
 </details>
 
