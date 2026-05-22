@@ -1,7 +1,10 @@
-# @git-lfs-hub/config
+# Git LFS Hub — config
 
-Config renderer for [`git-lfs-hub/deploy`](https://github.com/git-lfs-hub/deploy).
-Merges `vars.input.json` with defaults, validates against a JSON Schema, and renders Handlebars templates into `wrangler.jsonc` and `github-app.md`.
+The vars renderer for [Git LFS Hub](https://github.com/git-lfs-hub). Turns your `vars.input.json` into the artifacts a deploy needs: a validated `vars.json`, a `wrangler.jsonc` for the Worker, and a `github-app.md` walking you through OAuth App registration. Merges your inputs with package defaults, Ajv-validates against the JSON Schema, renders Handlebars templates. Idempotent on re-run.
+
+For the bigger picture (what the stack does, the deploy flow, the other repos) see the [org overview](https://github.com/git-lfs-hub).
+
+Invoked from a [git-lfs-hub/deploy](https://github.com/git-lfs-hub/deploy) checkout as `bun run config` (which runs `bunx github:git-lfs-hub/config`). You rarely need to touch this repo directly unless you're changing the schema or templates.
 
 ## Usage
 
