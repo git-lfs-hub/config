@@ -64,8 +64,7 @@ Validate `vars.json` against the package schema.
 
 ## Inputs
 
-- **`vars.input.json`**: user-edited; the primary input and resumption checkpoint.
-  - If missing, falls back to **`vars.json`** as input source (still re-merged, re-validated, and rewritten).
+- **`vars.input.json`**: user-edited; the primary input and resumption checkpoint. If missing, falls back to **`vars.json`** as input source (still re-merged, re-validated, and rewritten).
 - **`server/wrangler.template.jsonc`**: Handlebars source.
 - **`server/github-app.template.md`**: Handlebars source.
 
