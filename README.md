@@ -25,7 +25,7 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
 - **`org`**: GitHub org display name
 
-  - Used in docs
+  - Used in docs.
   - Populates: [`title`](vars.template.json#L2), [`github.home`](vars.template.json#L5), [GitHub OAuth App name](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L7)
 
 - **`cloudflare.accountId`**: Cloudflare account ID (numeric, from dashboard)
@@ -36,33 +36,33 @@ Edit **`vars.input.json`** at the deploy root. Merged with [`vars.template.json`
 
   - Populates: [`lfs.server`](vars.template.json#L8) → [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
 
-- Either: **`github.org[s]`**: org access mode (≤5)
+- GitHub access control, one of:
 
-  - Access is restricted to active org members
-  - `github.orgs` is a JSON array or space/comma-separated string
-  - Populates: [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
-
-- Or: **`github.user`**: single-user access mode
-
-  - Access is restricted to that GitHub username
-  - Populates: [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
+  - **`github.org[s]`**: active org members access mode (≤5)
+  
+    - Populates: [`vars.GITHUB_ORG[S]`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L47)
+    - A JSON array or space/comma-separated string.
+  
+  - **`github.user`**: single-user access mode
+  
+    - Populates: [`vars.GITHUB_USER`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L51)
 
 ### Optional
 
 - **`title`**: docs site title
 
   - Default: `{{org}} Hub`
-  - Populates: `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`)
+  - Populates: `docs/docmd.config.js` site title; available as `{{title}}` in doc templates. Shown in nav only when using `logo` layout (not `banner`).
 
-Docs nav branding (`assets/`):
-
-- **`banner`** (default): wide nav docs image. Suppresses `title` text
-
-  - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
-
-- **`logo`**: compact docs nav image. Shows `title` beside it. Omit `banner` to use this layout
-
-`string`: one filename for both themes;`object: `{ "dark": "...", "light": "..." }` per theme
+- Docs nav branding (`assets/`). One of:
+  
+  - **`banner`** (default): wide nav docs image. Suppresses `title` text.
+  
+    - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
+  
+  - **`logo`**: compact docs nav image. Shows `title` beside it. Omit `banner` to use this layout.
+  
+  - Both accept `string` (one filename for both themes) or `object`: `{ "dark": "...", "light": "..." }` per theme.
 
 ### Defaults
 
@@ -87,7 +87,7 @@ Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.i
   - Default: `lfs-server`
   - Populates: [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
 
-- **`s3.endpoint`**: R2 S3 API endpoint. Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
+- **`s3.endpoint`**: R2 S3 API endpoint for presigned upload/download URLs (direct client access).
 
   - Default: `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
   - Populates: [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
