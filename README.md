@@ -45,7 +45,7 @@ Optional, filled from [`vars.template.json`](vars.template.json) when omitted fr
 
 ### Extra keys
 
-Extra keys are allowed (`additionalProperties: true`) and pass through to templates and docs.
+Extra keys are allowed and pass through to templates and docs.
 
 ## Commands
 
