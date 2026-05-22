@@ -68,14 +68,6 @@ Docs nav branding (`assets/`):
   - `string`: one filename for both themes; 
   - `object`: `{ "dark": "...", "light": "..." }` per theme
 
-Sentry configuration:
-
-- **`sentry.org`**: Sentry organization slug
-
-  Runtime error reporting uses `SENTRY_DSN` (secret), not this var.
-
-  - Populates: [`vars.SENTRY_ORG`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L53)
-
 ### Defaults
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
