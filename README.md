@@ -58,56 +58,44 @@ Docs nav branding (`assets/`):
 
 - **`banner`** (default): wide nav docs image. Suppresses `title` text
 
-  - `string`: one filename for both themes; 
-  - `object: `{ "dark": "...", "light": "..." }` per theme
   - Default: `{ "dark": "banner-dark.png", "light": "banner-light.png" }`
 
-- **`logo`**: compact docs nav image. Shows `title` beside it
+- **`logo`**: compact docs nav image. Shows `title` beside it. Omit `banner` to use this layout
 
-  - Omit `banner` to use this layout
-  - `string`: one filename for both themes; 
-  - `object`: `{ "dark": "...", "light": "..." }` per theme
+`string`: one filename for both themes;`object: `{ "dark": "...", "light": "..." }` per theme
 
 ### Defaults
 
 Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.input.json`:
 
-- **`lfs.server`**: public HTTPS hostname of the deployed Worker
-
-  Used throughout [docs](https://github.com/git-lfs-hub/docs) (credential helper examples, `gh auth setup-git -h …`) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
+- **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used throughout [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
 
   - Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
-  - Populates: [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); available as `{{lfs.server}}` in doc templates
+  - Populates: [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
+
+- **`github.home`**: GitHub profile URL shown in docs
+
+  - Default: `https://github.com/<org-or-user>`
+
+- **`github.appHome`**: Worker public base URL. OAuth App homepage, callback base, web login redirect, and device-flow URLs.
+
+  - Default: `https://{{lfs.server}}`
+  - Populates: [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) (Homepage URL and [callback URL](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L19))
 
 - **`cloudflare.workerName`**: Worker script identifier in the Cloudflare dashboard
 
   - Default: `lfs-server`
   - Populates: [`name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L7) in `wrangler.jsonc`; [`lfs.server`](vars.template.json#L8)
 
-- **`s3.endpoint`**: R2 S3 API endpoint
-
-  Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
+- **`s3.endpoint`**: R2 S3 API endpoint. Presigned upload/download URLs; objects still verified via `LFS_BUCKET`.
 
   - Default: `https://{{cloudflare.accountId}}.r2.cloudflarestorage.com`
   - Populates: [`vars.S3_ENDPOINT`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L43)
 
-- **`s3.bucket`**: R2 bucket for LFS objects
-
-  Binding and presign must match. Staging CI appends `-staging`.
+- **`s3.bucket`**: R2 bucket for LFS objects. Staging CI appends `-staging`.
 
   - Default: `lfs-objects`
   - Populates: [`vars.S3_BUCKET_NAME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L44), [`r2_buckets.LFS_BUCKET.bucket_name`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L25)
-
-- **`github.home`**: GitHub profile URL shown in docs
-
-  - Default: `https://github.com/<org-or-user>`
-
-- **`github.appHome`**: Worker public base URL
-
-  OAuth App homepage, callback base, web login redirect, and device-flow URLs.
-
-  - Default: `https://{{lfs.server}}`
-  - Populates: [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46); [`github-app.template.md`](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L11) (Homepage URL and [callback URL](https://github.com/git-lfs-hub/server/blob/main/github-app.template.md#L19))
 
 ### Extra keys
 
