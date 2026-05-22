@@ -61,7 +61,7 @@ Filled from [`vars.template.json`](vars.template.json) when omitted from `vars.i
   
   - Both accept `string` (one filename for both themes) or `object`: `{ "dark": "...", "light": "..." }` per theme.
 
-- **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used throughout [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
+- **`lfs.server`**: public HTTPS hostname of the deployed Worker. Used in [docs](https://github.com/git-lfs-hub/docs/tree/main/docs) (credential helper configuration) and [e2e](https://github.com/git-lfs-hub/e2e) smoke tests.
 
   - Default: `{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev`
   - Populates [`github.appHome`](vars.template.json#L6) → [`vars.GITHUB_APP_HOME`](https://github.com/git-lfs-hub/server/blob/main/wrangler.template.jsonc#L46)
