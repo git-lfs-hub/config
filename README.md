@@ -1,5 +1,10 @@
 # Git LFS Hub — config
 
+[![CI][ci-badge]][gh-wf-href]
+[![CodeQL][codeql-badge]][codeql-href]
+[![Socket][socket-badge]][socket-href]
+[![License][license-badge]][license-href]
+
 The vars renderer for [Git LFS Hub](https://github.com/git-lfs-hub). Turns your `vars.input.json` into the artifacts a deploy needs: a validated `vars.json`, a `wrangler.jsonc` for the Worker, and a `github-app.md` walking you through OAuth App registration. Merges your inputs with package defaults, Ajv-validates against the JSON Schema, renders Handlebars templates. Idempotent on re-run.
 
 For the bigger picture (what the stack does, the deploy flow, the other repos) see the [org overview](https://github.com/git-lfs-hub).
@@ -73,3 +78,15 @@ Validate `vars.json` against the package schema.
 - **`vars.json`**: merged, validated config consumed by deploy. Idempotent on re-run.
 - **`wrangler.jsonc`**: created once unless `--force`.
 - **`github-app.md`**: regenerated every run.
+
+[ci-badge]: https://badgen.net/github/checks/git-lfs-hub/config/main?icon=vitest&label=CI
+[gh-wf-href]: https://github.com/git-lfs-hub/config/actions/workflows/main.yml
+
+[codeql-badge]: https://github.com/git-lfs-hub/config/actions/workflows/github-code-scanning/codeql/badge.svg
+[codeql-href]: https://github.com/git-lfs-hub/config/actions/workflows/github-code-scanning/codeql?query=branch%3Amain
+
+[socket-badge]: https://badgen.net/static/Socket/report/blue?icon=socket
+[socket-href]: https://socket.dev/dashboard/org/git-lfs-hub/repo/@git-lfs-hub/config
+
+[license-badge]: https://badgen.net/github/license/git-lfs-hub/config
+[license-href]: LICENSE.md
