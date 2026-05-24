@@ -1,6 +1,7 @@
 # Git LFS Hub — config
 
 [![CI][ci-badge]][gh-wf-href]
+[![Coverage][coverage-badge]][coverage-href]
 [![CodeQL][codeql-badge]][codeql-href]
 [![Socket][socket-badge]][socket-href]
 [![License][license-badge]][license-href]
@@ -81,6 +82,9 @@ Validate `vars.json` against the package schema.
 
 [ci-badge]: https://badgen.net/github/checks/git-lfs-hub/config/main?icon=vitest&label=CI
 [gh-wf-href]: https://github.com/git-lfs-hub/config/actions/workflows/main.yml
+
+[coverage-badge]: https://badgen.net/https/git-lfs-hub.github.io/config/coverage-badge.json?icon=vitest
+[coverage-href]: https://git-lfs-hub.github.io/config/lcov-report/
 
 [codeql-badge]: https://github.com/git-lfs-hub/config/actions/workflows/github-code-scanning/codeql/badge.svg
 [codeql-href]: https://github.com/git-lfs-hub/config/actions/workflows/github-code-scanning/codeql?query=branch%3Amain

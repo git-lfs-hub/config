@@ -2,7 +2,21 @@ import { describe, test, expect, vi, afterAll, afterEach } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { normalizeValue, normalizeVars, renderTemplate, optionalVars, writeUtf8File } from "./lib";
+import {
+  deepMerge,
+  error,
+  loadInputVars,
+  loadDefaultVars,
+  normalizeValue,
+  normalizeVars,
+  readVarsFile,
+  renderTemplate,
+  renderTemplateFile,
+  validateSchema,
+  writeJsonFile,
+  writeUtf8File,
+  optionalVars,
+} from "./lib";
 
 describe("normalize", () => {
   test("joins array with spaces", () => {
@@ -158,6 +172,207 @@ describe("writeUtf8File", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     writeUtf8File(p, "hello");
     expect(log).toHaveBeenCalledWith(`Wrote ${p}`);
+  });
+});
+
+describe("renderTemplate error reporting", () => {
+  test("includes context entries in error message", () => {
+    try {
+      renderTemplate("{{missing}}", {}, { template: "foo.hbs", vars: "bar.json" });
+      expect.unreachable();
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).toContain("template: foo.hbs");
+      expect(msg).toContain("vars: bar.json");
+    }
+  });
+
+  test("includes line/col pointer when error has position", () => {
+    const source = '{\n  "key": "{{missing}}"\n}';
+    try {
+      renderTemplate(source, {});
+      expect.unreachable();
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).toContain("line ");
+      expect(msg).toContain("^");
+    }
+  });
+
+  test("omits context block when context is undefined", () => {
+    try {
+      renderTemplate("{{missing}}", {});
+      expect.unreachable();
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).not.toContain("template:");
+    }
+  });
+
+  test("skips undefined context values", () => {
+    try {
+      renderTemplate("{{missing}}", {}, { template: "a.hbs", vars: undefined });
+      expect.unreachable();
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).toContain("template: a.hbs");
+      expect(msg).toContain("vars: undefined");
+    }
+  });
+});
+
+describe("validateSchema", () => {
+  const dir = mkdtempSync(join(tmpdir(), "validate-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("passes valid data", () => {
+    const schema = join(dir, "valid-schema.json");
+    writeFileSync(schema, JSON.stringify({
+      type: "object",
+      properties: { name: { type: "string" } },
+    }));
+    expect(() => validateSchema({ name: "test" }, schema)).not.toThrow();
+  });
+
+  test("throws on invalid data", () => {
+    const schema = join(dir, "strict-schema.json");
+    writeFileSync(schema, JSON.stringify({
+      type: "object",
+      required: ["name"],
+      properties: { name: { type: "string" } },
+    }));
+    expect(() => validateSchema({}, schema)).toThrow("Invalid vars:");
+  });
+
+  test("throws on type mismatch", () => {
+    const schema = join(dir, "type-schema.json");
+    writeFileSync(schema, JSON.stringify({
+      type: "object",
+      properties: { age: { type: "number" } },
+    }));
+    expect(() => validateSchema({ age: "not-a-number" }, schema)).toThrow("Invalid vars:");
+  });
+
+  test("throws when ref schema file is unreadable", () => {
+    const schema = join(dir, "main.json");
+    writeFileSync(schema, JSON.stringify({ type: "object" }));
+    expect(() => validateSchema({}, schema, join(dir, "nonexistent-ref.json"))).toThrow("nonexistent-ref.json");
+  });
+
+  test("throws when ref schema is invalid JSON Schema", () => {
+    const schema = join(dir, "main2.json");
+    const badRef = join(dir, "bad-ref.json");
+    writeFileSync(schema, JSON.stringify({ type: "object" }));
+    writeFileSync(badRef, "NOT JSON");
+    expect(() => validateSchema({}, schema, badRef)).toThrow(badRef);
+  });
+
+  test("throws when main schema file is unreadable", () => {
+    expect(() => validateSchema({}, join(dir, "no-such-schema.json"))).toThrow("no-such-schema.json");
+  });
+
+  test("throws when no schema path provided", () => {
+    expect(() => validateSchema({})).toThrow("schemaPath required");
+  });
+
+  test("uses ref schemas for validation", () => {
+    const ref = join(dir, "defs.json");
+    writeFileSync(ref, JSON.stringify({
+      $id: "https://example.com/defs.json",
+      definitions: { posInt: { type: "integer", minimum: 1 } },
+    }));
+    const schema = join(dir, "with-ref.json");
+    writeFileSync(schema, JSON.stringify({
+      type: "object",
+      properties: {
+        count: { $ref: "https://example.com/defs.json#/definitions/posInt" },
+      },
+    }));
+    expect(() => validateSchema({ count: 5 }, schema, ref)).not.toThrow();
+    expect(() => validateSchema({ count: -1 }, schema, ref)).toThrow("Invalid vars:");
+  });
+});
+
+describe("deepMerge", () => {
+  test("override non-object replaces base non-object", () => {
+    expect(deepMerge({ a: 1 }, { a: 2 })).toEqual({ a: 2 });
+  });
+
+  test("override adds new keys", () => {
+    expect(deepMerge({ a: 1 }, { b: 2 })).toEqual({ a: 1, b: 2 });
+  });
+
+  test("override replaces object with non-object", () => {
+    expect(deepMerge({ a: { x: 1 } }, { a: "flat" })).toEqual({ a: "flat" });
+  });
+
+  test("override replaces non-object with object", () => {
+    expect(deepMerge({ a: "flat" }, { a: { x: 1 } })).toEqual({ a: { x: 1 } });
+  });
+});
+
+describe("error", () => {
+  test("throws with message", () => {
+    expect(() => error("boom")).toThrow("boom");
+  });
+});
+
+describe("readVarsFile", () => {
+  const dir = mkdtempSync(join(tmpdir(), "readVars-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("reads and parses JSON", () => {
+    const p = join(dir, "data.json");
+    writeFileSync(p, '{"key":"val"}');
+    expect(readVarsFile(p)).toEqual({ key: "val" });
+  });
+});
+
+describe("writeJsonFile", () => {
+  const dir = mkdtempSync(join(tmpdir(), "writeJson-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("writes pretty JSON with trailing newline", () => {
+    const p = join(dir, "out.json");
+    writeJsonFile(p, { a: 1 });
+    expect(readFileSync(p, "utf8")).toBe('{\n  "a": 1\n}\n');
+  });
+});
+
+describe("renderTemplateFile", () => {
+  const dir = mkdtempSync(join(tmpdir(), "renderFile-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("reads template, renders, writes output", () => {
+    const tpl = join(dir, "tpl.txt");
+    const out = join(dir, "out.txt");
+    writeFileSync(tpl, "Hello {{name}}!");
+    renderTemplateFile(tpl, out, { name: "world" });
+    expect(readFileSync(out, "utf8")).toBe("Hello world!");
+  });
+});
+
+describe("loadInputVars", () => {
+  const dir = mkdtempSync(join(tmpdir(), "loadInput-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("loads and normalizes vars from file", () => {
+    const p = join(dir, "input.json");
+    writeFileSync(p, JSON.stringify({ github: { orgs: ["a", "b"] } }));
+    const result = loadInputVars(p);
+    expect((result.github as Record<string, unknown>).orgs).toBe("a b");
+  });
+});
+
+describe("loadDefaultVars", () => {
+  const dir = mkdtempSync(join(tmpdir(), "loadDefaults-"));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  test("loads defaults and resolves templates against input", () => {
+    const defaults = join(dir, "defaults.json");
+    writeFileSync(defaults, JSON.stringify({ greeting: "Hello {{name}}" }));
+    const result = loadDefaultVars(defaults, { name: "world" });
+    expect(result.greeting).toBe("Hello world");
   });
 });
 
