@@ -6,7 +6,7 @@ const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export function validate({ cwd }: { cwd: string }): void {
   const ws = resolve(cwd);
-  const vars = readVarsFile(resolve(ws, "vars.json"));
-  validateSchema(vars, resolve(pkg, "vars.schema.json"));
+  const vars = readVarsFile(ws, "vars.json");
+  validateSchema(pkg, vars, "vars.schema.json");
   console.log(`OK: ${resolve(ws, "vars.json")}`);
 }
