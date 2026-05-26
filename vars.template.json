@@ -11,9 +11,6 @@
     "endpoint": "https://{{cloudflare.accountId}}.r2.cloudflarestorage.com",
     "bucket": "lfs-objects"
   },
-  "server": {
-    "main": "src/index.ts"
-  },
   "cloudflare": {
     "workerName": "lfs-server",
     "admin": {
