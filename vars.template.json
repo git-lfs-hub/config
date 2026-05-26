@@ -3,14 +3,24 @@
   "banner": { "dark": "banner-dark.png", "light": "banner-light.png" },
   "github": {
     "home": "https://github.com/{{github.owner}}",
-    "appHome": "https://{{lfs.server}}"
+    "appHome": "https://{{lfs.server}}",
+    "adminHome": "https://{{cloudflare.admin.workerName}}.{{cloudflare.accountSlug}}.workers.dev"
   },
   "lfs": { "server": "{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev" },
   "s3": {
     "endpoint": "https://{{cloudflare.accountId}}.r2.cloudflarestorage.com",
     "bucket": "lfs-objects"
   },
+  "server": {
+    "main": "src/index.ts"
+  },
   "cloudflare": {
-    "workerName": "lfs-server"
+    "workerName": "lfs-server",
+    "admin": {
+      "workerName": "lfs-admin"
+    }
+  },
+  "gc": {
+    "purgeGraceDays": 7
   }
 }

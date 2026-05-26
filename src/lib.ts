@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import Ajv, { type AnySchema } from "ajv";
 import Handlebars from "handlebars";
 
@@ -36,7 +37,7 @@ function filterDefaults(defaults: Record<string, unknown>, input: Record<string,
 }
 
 export function loadInputVars(path: string): Record<string, unknown> {
-  return normalizeVars(readVarsFile(path));
+  return normalizeVars(readVarsFile("", path));
 }
 
 /** Merges vars.json contents with defaults and normalizes array values. */
@@ -66,11 +67,13 @@ export function normalizeValue(v: unknown): unknown {
 }
 
 export function loadDefaultVars(
+  ws: string,
   defaultsPath: string,
   input: Record<string, unknown>,
   context?: Record<string, string | undefined>,
 ): Record<string, unknown> {
-  return resolveDefaults(readVarsFile(defaultsPath), input, { template: defaultsPath, ...context });
+  const abs = resolve(ws, defaultsPath);
+  return resolveDefaults(readVarsFile("", abs), input, { template: abs, ...context });
 }
 
 /** Filters, then resolves defaults that may reference each other or input, via multi-pass rendering. */
@@ -92,13 +95,14 @@ export function resolveDefaults(
 }
 
 /** Reads and parses a JSON file. */
-export function readVarsFile(path: string): Record<string, unknown> {
-  return JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+export function readVarsFile(ws: string, path: string): Record<string, unknown> {
+  return JSON.parse(readFileSync(resolve(ws, path), "utf8")) as Record<string, unknown>;
 }
 
-/** Reads a template file, renders it with vars, and writes the result to outPath. */
-export function renderTemplateFile(path: string, outPath: string, vars: Record<string, unknown>, varsPath?: string): void {
-  writeUtf8File(outPath, renderTemplate(readFileSync(path, "utf8"), vars, { template: path, vars: varsPath }));
+/** Reads a template file and renders it with vars. */
+export function renderTemplateFile(ws: string, path: string, vars: Record<string, unknown>, varsPath?: string): string {
+  const abs = resolve(ws, path);
+  return renderTemplate(readFileSync(abs, "utf8"), vars, { template: abs, vars: varsPath });
 }
 
 /** Renders a Handlebars template string with the given vars (strict, no HTML escaping). */
@@ -125,28 +129,29 @@ export function renderTemplate(source: string, vars: Record<string, unknown>, co
 }
 
 /** Serializes data to a JSON file with trailing newline. */
-export function writeJsonFile(path: string, data: unknown): void {
-  writeUtf8File(path, JSON.stringify(data, null, 2) + "\n");
+export function writeJsonFile(ws: string, path: string, data: unknown): void {
+  writeUtf8File(ws, path, JSON.stringify(data, null, 2) + "\n");
 }
 
 /** Writes a UTF-8 file and logs the path. Skips write if content unchanged. */
-export function writeUtf8File(path: string, content: string): void {
-  if (existsSync(path) && readFileSync(path, "utf8") === content) return;
-  writeFileSync(path, content, "utf8");
-  console.log(`Wrote ${path}`);
+export function writeUtf8File(ws: string, path: string, content: string): void {
+  const abs = resolve(ws, path);
+  if (existsSync(abs) && readFileSync(abs, "utf8") === content) return;
+  writeFileSync(abs, content, "utf8");
+  console.log(`Wrote ${abs}`);
 }
 
 /** Validates data against a JSON Schema file; throws with ajv error text on failure. */
-export function validateSchema(data: Record<string, unknown>, ...schemaPaths: string[]): void {
+export function validateSchema(ws: string, data: Record<string, unknown>, ...schemaPaths: string[]): void {
   const schemaPath = schemaPaths[0] ?? error("schemaPath required");
   const refPaths = schemaPaths.slice(1);
   const ajv = new Ajv({ allErrors: true });
   for (const ref of refPaths) {
-    try { ajv.addSchema(readVarsFile(ref) as AnySchema); }
+    try { ajv.addSchema(readVarsFile(ws, ref) as AnySchema); }
     catch (e) { throw new Error(`${ref}: ${e instanceof Error ? e.message : e}`); }
   }
   try {
-    const validate = ajv.compile<Record<string, unknown>>(readVarsFile(schemaPath) as AnySchema);
+    const validate = ajv.compile<Record<string, unknown>>(readVarsFile(ws, schemaPath) as AnySchema);
     if (!validate(data)) throw new Error(`Invalid vars:\n${ajv.errorsText(validate.errors, { separator: "\n" })}`);
   } catch (e) {
     if (e instanceof Error && e.message.startsWith("Invalid vars:")) throw e;

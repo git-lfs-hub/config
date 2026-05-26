@@ -2,6 +2,7 @@
  * Renders deployment artifacts from Handlebars templates in `cwd`:
  * - vars.json    ← vars.input.json (or vars.json) merged with vars.template.json
  * - wrangler.jsonc ← server/wrangler.template.jsonc (skipped if exists unless --force)
+ * - wrangler.admin.jsonc ← admin/wrangler.template.jsonc (skipped if exists unless --force)
  * - github-app.md  ← server/github-app.template.md
  */
 
@@ -16,6 +17,7 @@ import {
   renderTemplateFile,
   validateSchema,
   writeJsonFile,
+  writeUtf8File,
 } from "./lib";
 
 function existing(path: string): string | undefined {
@@ -33,24 +35,24 @@ export function init({ cwd, force }: { cwd: string; force: boolean }): void {
     error(`No vars.input.json or vars.json in ${ws}`);
 
   const input = loadInputVars(inputPath);
-  const defaults = loadDefaultVars(resolve(pkg, "vars.template.json"), input, {
+  const defaults = loadDefaultVars(pkg, "vars.template.json", input, {
     vars: inputPath,
   });
   const vars = deepMerge(defaults, input);
-  validateSchema(vars, resolve(pkg, "vars.schema.json"));
-  writeJsonFile(resolve(ws, "vars.json"), vars);
+  validateSchema(pkg, vars, "vars.schema.json");
+  writeJsonFile(ws, "vars.json", vars);
 
-  function render(relIn: string, relOut: string): void {
-    renderTemplateFile(
-      resolve(ws, relIn),
-      resolve(ws, relOut),
-      vars,
-      inputPath,
-    );
+  function render(relIn: string): string {
+    return renderTemplateFile(ws, relIn, vars, inputPath);
   }
 
   if (force || !existsSync(resolve(ws, "wrangler.jsonc"))) {
-    render("server/wrangler.template.jsonc", "wrangler.jsonc");
+    writeUtf8File(ws, "wrangler.jsonc", render("server/wrangler.template.jsonc"));
   }
-  render("server/github-app.template.md", "github-app.md");
+  if (force || !existsSync(resolve(ws, "wrangler.admin.jsonc"))) {
+    if (existsSync(resolve(ws, "admin"))) {
+      writeUtf8File(ws, "wrangler.admin.jsonc", render("admin/wrangler.template.jsonc"));
+    }
+  }
+  writeUtf8File(ws, "github-app.md", render("server/github-app.template.md"));
 }

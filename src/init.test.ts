@@ -7,14 +7,27 @@ import { normalizeVars, resolveDefaults, deepMerge } from "./lib";
 
 function setupCwd(): string {
   const cwd = mkdtempSync(join(tmpdir(), "config-init-"));
-  mkdirSync(join(cwd, "server"), { recursive: true });
+  mkdirSync(join(cwd, "server", "test"), { recursive: true });
+  mkdirSync(join(cwd, "admin"), { recursive: true });
   writeFileSync(
     join(cwd, "server", "wrangler.template.jsonc"),
     `{ "org": "{{org}}", "accountId": "{{cloudflare.accountId}}" }\n`,
   );
   writeFileSync(
+    join(cwd, "admin", "wrangler.template.jsonc"),
+    `{ "org": "{{org}}", "accountId": "{{cloudflare.accountId}}" }\n`,
+  );
+  writeFileSync(
     join(cwd, "server", "github-app.template.md"),
     `# {{org}}\n`,
+  );
+  writeFileSync(
+    join(cwd, "server", "test", "vars.test.json"),
+    `{}\n`,
+  );
+  writeFileSync(
+    join(cwd, "server", "test", "wrangler.test.json"),
+    `{}\n`,
   );
   return cwd;
 }

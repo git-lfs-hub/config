@@ -148,14 +148,14 @@ describe("writeUtf8File", () => {
 
   test("creates file when missing", () => {
     const p = join(dir, "new.txt");
-    writeUtf8File(p, "hello");
+    writeUtf8File(dir, "new.txt", "hello");
     expect(readFileSync(p, "utf8")).toBe("hello");
   });
 
   test("overwrites when content differs", () => {
     const p = join(dir, "diff.txt");
     writeFileSync(p, "old", "utf8");
-    writeUtf8File(p, "new");
+    writeUtf8File(dir, "diff.txt", "new");
     expect(readFileSync(p, "utf8")).toBe("new");
   });
 
@@ -163,14 +163,14 @@ describe("writeUtf8File", () => {
     const p = join(dir, "same.txt");
     writeFileSync(p, "hello", "utf8");
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    writeUtf8File(p, "hello");
+    writeUtf8File(dir, "same.txt", "hello");
     expect(log).not.toHaveBeenCalled();
   });
 
   test("logs when write occurs", () => {
     const p = join(dir, "logged.txt");
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    writeUtf8File(p, "hello");
+    writeUtf8File(dir, "logged.txt", "hello");
     expect(log).toHaveBeenCalledWith(`Wrote ${p}`);
   });
 });
@@ -231,7 +231,7 @@ describe("validateSchema", () => {
       type: "object",
       properties: { name: { type: "string" } },
     }));
-    expect(() => validateSchema({ name: "test" }, schema)).not.toThrow();
+    expect(() => validateSchema(dir, { name: "test" }, "valid-schema.json")).not.toThrow();
   });
 
   test("throws on invalid data", () => {
@@ -241,7 +241,7 @@ describe("validateSchema", () => {
       required: ["name"],
       properties: { name: { type: "string" } },
     }));
-    expect(() => validateSchema({}, schema)).toThrow("Invalid vars:");
+    expect(() => validateSchema(dir, {}, "strict-schema.json")).toThrow("Invalid vars:");
   });
 
   test("throws on type mismatch", () => {
@@ -250,13 +250,13 @@ describe("validateSchema", () => {
       type: "object",
       properties: { age: { type: "number" } },
     }));
-    expect(() => validateSchema({ age: "not-a-number" }, schema)).toThrow("Invalid vars:");
+    expect(() => validateSchema(dir, { age: "not-a-number" }, "type-schema.json")).toThrow("Invalid vars:");
   });
 
   test("throws when ref schema file is unreadable", () => {
     const schema = join(dir, "main.json");
     writeFileSync(schema, JSON.stringify({ type: "object" }));
-    expect(() => validateSchema({}, schema, join(dir, "nonexistent-ref.json"))).toThrow("nonexistent-ref.json");
+    expect(() => validateSchema(dir, {}, "main.json", "nonexistent-ref.json")).toThrow("nonexistent-ref.json");
   });
 
   test("throws when ref schema is invalid JSON Schema", () => {
@@ -264,15 +264,15 @@ describe("validateSchema", () => {
     const badRef = join(dir, "bad-ref.json");
     writeFileSync(schema, JSON.stringify({ type: "object" }));
     writeFileSync(badRef, "NOT JSON");
-    expect(() => validateSchema({}, schema, badRef)).toThrow(badRef);
+    expect(() => validateSchema(dir, {}, "main2.json", "bad-ref.json")).toThrow("bad-ref.json");
   });
 
   test("throws when main schema file is unreadable", () => {
-    expect(() => validateSchema({}, join(dir, "no-such-schema.json"))).toThrow("no-such-schema.json");
+    expect(() => validateSchema(dir, {}, "no-such-schema.json")).toThrow("no-such-schema.json");
   });
 
   test("throws when no schema path provided", () => {
-    expect(() => validateSchema({})).toThrow("schemaPath required");
+    expect(() => validateSchema(dir, {})).toThrow("schemaPath required");
   });
 
   test("uses ref schemas for validation", () => {
@@ -288,8 +288,8 @@ describe("validateSchema", () => {
         count: { $ref: "https://example.com/defs.json#/definitions/posInt" },
       },
     }));
-    expect(() => validateSchema({ count: 5 }, schema, ref)).not.toThrow();
-    expect(() => validateSchema({ count: -1 }, schema, ref)).toThrow("Invalid vars:");
+    expect(() => validateSchema(dir, { count: 5 }, "with-ref.json", "defs.json")).not.toThrow();
+    expect(() => validateSchema(dir, { count: -1 }, "with-ref.json", "defs.json")).toThrow("Invalid vars:");
   });
 });
 
@@ -324,7 +324,7 @@ describe("readVarsFile", () => {
   test("reads and parses JSON", () => {
     const p = join(dir, "data.json");
     writeFileSync(p, '{"key":"val"}');
-    expect(readVarsFile(p)).toEqual({ key: "val" });
+    expect(readVarsFile(dir, "data.json")).toEqual({ key: "val" });
   });
 });
 
@@ -334,7 +334,7 @@ describe("writeJsonFile", () => {
 
   test("writes pretty JSON with trailing newline", () => {
     const p = join(dir, "out.json");
-    writeJsonFile(p, { a: 1 });
+    writeJsonFile(dir, "out.json", { a: 1 });
     expect(readFileSync(p, "utf8")).toBe('{\n  "a": 1\n}\n');
   });
 });
@@ -343,12 +343,10 @@ describe("renderTemplateFile", () => {
   const dir = mkdtempSync(join(tmpdir(), "renderFile-"));
   afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
-  test("reads template, renders, writes output", () => {
+  test("reads template and renders", () => {
     const tpl = join(dir, "tpl.txt");
-    const out = join(dir, "out.txt");
     writeFileSync(tpl, "Hello {{name}}!");
-    renderTemplateFile(tpl, out, { name: "world" });
-    expect(readFileSync(out, "utf8")).toBe("Hello world!");
+    expect(renderTemplateFile(dir, "tpl.txt", { name: "world" })).toBe("Hello world!");
   });
 });
 
@@ -371,7 +369,7 @@ describe("loadDefaultVars", () => {
   test("loads defaults and resolves templates against input", () => {
     const defaults = join(dir, "defaults.json");
     writeFileSync(defaults, JSON.stringify({ greeting: "Hello {{name}}" }));
-    const result = loadDefaultVars(defaults, { name: "world" });
+    const result = loadDefaultVars(dir, "defaults.json", { name: "world" });
     expect(result.greeting).toBe("Hello world");
   });
 });
