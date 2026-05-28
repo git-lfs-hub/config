@@ -60,7 +60,6 @@ Extra keys are allowed and pass through to templates and docs.
 Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler[.admin].jsonc` (skipped if it exists) and `github-app.md`.
 
 - **`--cwd <dir>`** (default `.`): deploy checkout root.
-- **`--force`** (default off): overwrite existing `wrangler[.admin].jsonc`.
 
 ### `validate`
 
@@ -72,13 +71,13 @@ Validate `vars.json` against the package schema.
 
 - **`vars.input.json`**: user-edited; the primary input and resumption checkpoint. If missing, falls back to **`vars.json`** as input source (still re-merged, re-validated, and rewritten).
 - **`{server,admin}/wrangler.template.jsonc`**: Handlebars source.
-- **`{server,admin}/github-app.template.md`**: Handlebars source.
+- **`server/github-app.template.md`**: Handlebars source.
 
 ## Outputs
 
 - **`vars.json`**: merged, validated config consumed by deploy. Idempotent on re-run.
-- **`wrangler[.admin].jsonc`**: created once unless `--force`.
-- **`github-app.md`**: regenerated every run.
+- **`wrangler[.admin].jsonc`**: rendered from templates + vars.
+- **`github-app.md`**: rendered from template + vars.
 
 [ci-badge]: https://badgen.net/github/checks/git-lfs-hub/config/main?icon=vitest&label=CI
 [gh-wf-href]: https://github.com/git-lfs-hub/config/actions/workflows/main.yml

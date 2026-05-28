@@ -173,18 +173,4 @@ describe("init()", () => {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
-
-  test("preserves existing wrangler.jsonc unless --force", () => {
-    const cwd = setupCwd();
-    try {
-      writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(FULL_INPUT));
-      writeFileSync(join(cwd, "wrangler.jsonc"), "PRESERVED");
-      init({ cwd, force: false });
-      expect(readFileSync(join(cwd, "wrangler.jsonc"), "utf8")).toBe("PRESERVED");
-      init({ cwd, force: true });
-      expect(readFileSync(join(cwd, "wrangler.jsonc"), "utf8")).not.toBe("PRESERVED");
-    } finally {
-      rmSync(cwd, { recursive: true, force: true });
-    }
-  });
 });
