@@ -15,12 +15,11 @@ const { values, positionals } = parseArgs({
 
 const cmd = positionals[0] ?? "init";
 const cwd = values.cwd;
-const force = values.force;
 
 if (cmd === "validate") {
   validate({ cwd });
 } else if (cmd === "init") {
-  init({ cwd, force });
+  init({ cwd });
 } else if (cmd === "init-test-worker") {
   const templateDir = positionals[1];
   const testDir = positionals[2];

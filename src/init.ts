@@ -1,8 +1,8 @@
 /**
  * Renders deployment artifacts from Handlebars templates in `cwd`:
  * - vars.json    ← vars.input.json (or vars.json) merged with vars.template.json
- * - wrangler.jsonc ← server/wrangler.template.jsonc (skipped if exists unless --force)
- * - wrangler.admin.jsonc ← admin/wrangler.template.jsonc (skipped if exists unless --force)
+ * - wrangler.jsonc ← server/wrangler.template.jsonc
+ * - wrangler.admin.jsonc ← admin/wrangler.template.jsonc
  * - github-app.md  ← server/github-app.template.md
  */
 
@@ -26,7 +26,7 @@ function existing(path: string): string | undefined {
 
 const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-export function init({ cwd, force }: { cwd: string; force: boolean }): void {
+export function init({ cwd }: { cwd: string }): void {
   const ws = resolve(cwd);
 
   const inputPath =
@@ -46,13 +46,9 @@ export function init({ cwd, force }: { cwd: string; force: boolean }): void {
     return renderTemplateFile(ws, relIn, vars, inputPath);
   }
 
-  if (force || !existsSync(resolve(ws, "wrangler.jsonc"))) {
-    writeUtf8File(ws, "wrangler.jsonc", render("server/wrangler.template.jsonc"));
-  }
-  if (force || !existsSync(resolve(ws, "wrangler.admin.jsonc"))) {
-    if (existsSync(resolve(ws, "admin"))) {
-      writeUtf8File(ws, "wrangler.admin.jsonc", render("admin/wrangler.template.jsonc"));
-    }
+  writeUtf8File(ws, "wrangler.jsonc", render("server/wrangler.template.jsonc"));
+  if (existsSync(resolve(ws, "admin"))) {
+    writeUtf8File(ws, "wrangler.admin.jsonc", render("admin/wrangler.template.jsonc"));
   }
   writeUtf8File(ws, "github-app.md", render("server/github-app.template.md"));
 }
