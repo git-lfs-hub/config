@@ -3,6 +3,9 @@
   "github": { "org": "git-lfs-hub" },
   "cloudflare": {
     "TODO: accountId": "Your Cloudflare Account ID",
-    "TODO: accountSlug": "Your Cloudflare Account Slug"
+    "TODO: accountSlug": "Your Cloudflare Account Slug",
+    "kv": {
+      "TODO: githubCacheId": "Run `wrangler kv namespace create GITHUB_CACHE` and paste the id"
+    }
   }
 }

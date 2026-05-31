@@ -15,6 +15,9 @@
     "workerName": "lfs-server",
     "admin": {
       "workerName": "lfs-admin"
+    },
+    "kv": {
+      "githubCacheId": ""
     }
   },
   "gc": {
