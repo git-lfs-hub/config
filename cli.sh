@@ -19,7 +19,7 @@ link server/wrangler.jsonc -sf ../wrangler.jsonc
 link server/worker-configuration.d.ts -sf ../worker-configuration.d.ts
 link server/public -sfn ../docs/site
 
-if [ -d admin]; then
+if [ -d admin ]; then
     link admin/wrangler.jsonc -sf ../wrangler.admin.jsonc
     link admin/worker-configuration.d.ts -sf ../worker-configuration.admin.d.ts
 fi
