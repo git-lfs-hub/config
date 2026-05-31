@@ -10,7 +10,13 @@
       "properties": {
         "accountId": { "type": "string" },
         "accountSlug": { "type": "string" },
-        "workerName": { "type": "string" }
+        "workerName": { "type": "string" },
+        "kv": {
+          "type": "object",
+          "properties": {
+            "githubCacheId": { "type": "string" }
+          }
+        }
       }
     },
     "github": {
