@@ -9,6 +9,7 @@ const { values, positionals } = parseArgs({
   options: {
     cwd: { type: "string", default: "." },
     force: { type: "boolean", default: false },
+    env: { type: "string" },
   },
   allowPositionals: true,
 });
@@ -19,7 +20,7 @@ const cwd = values.cwd;
 if (cmd === "validate") {
   validate({ cwd });
 } else if (cmd === "init") {
-  init({ cwd });
+  init({ cwd, env: values.env });
 } else if (cmd === "init-test-worker") {
   const templateDir = positionals[1];
   const testDir = positionals[2];

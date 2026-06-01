@@ -57,9 +57,28 @@ Extra keys are allowed and pass through to templates and docs.
 
 ### `init` (default)
 
-Read `vars.input.json` (or `vars.json` as fallback), merge with package defaults, validate, write `vars.json`, render `wrangler[.admin].jsonc` (skipped if it exists) and `github-app.md`.
+Resolve the input vars, merge with package defaults, apply the deploy env, validate, write `vars.json`, render `wrangler[.admin].jsonc` (skipped if it exists) and `github-app.md`.
 
 - **`--cwd <dir>`** (default `.`): deploy checkout root.
+- **`--env <name>`**: deploy env (e.g. `--env staging`). See [Deploy env](#deploy-env).
+
+**Input vars** are read from the first available source (highest precedence first):
+
+1. **`GLH_VARS_JSON`** env var: the vars as a JSON string.
+2. **`vars.input.json`** in `--cwd`.
+3. **`vars.json`** in `--cwd` (re-merged, re-validated, rewritten).
+
+If none are present, fails with `No vars.input.json or vars.json in <ws>, and GLH_VARS_JSON unset`.
+
+#### Deploy env
+
+The deploy env appends a `-{env}` suffix to `cloudflare.workerName`, `cloudflare.admin.workerName`, and `s3.bucket`. Resolved from the first available source (highest precedence first):
+
+1. **`--env <name>`** CLI flag.
+2. **`GLH_ENV`** env var.
+3. **`env`** field inside the resolved vars.
+
+`""`, `production`, `prod`, or unset mean production and add **no** suffix; any other value appends `-{value}` (e.g. `staging` → `…-staging`).
 
 ### `validate`
 
@@ -69,7 +88,7 @@ Validate `vars.json` against the package schema.
 
 ## Inputs
 
-- **`vars.input.json`**: user-edited; the primary input and resumption checkpoint. If missing, falls back to **`vars.json`** as input source (still re-merged, re-validated, and rewritten).
+- **`vars.input.json`**: user-edited; the primary input and resumption checkpoint. Overridden by the **`GLH_VARS_JSON`** env var; falls back to **`vars.json`** when absent. See [`init`](#init-default) for precedence.
 - **`{server,admin}/wrangler.template.jsonc`**: Handlebars source.
 - **`server/github-app.template.md`**: Handlebars source.
 
