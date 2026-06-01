@@ -1,5 +1,8 @@
+.plans/
 coverage/
 node_modules/
 *.tsbuildinfo
 .turbo
 *.log
+.env
+.claude

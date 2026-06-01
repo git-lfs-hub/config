@@ -1,8 +1,9 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { init } from "./init";
+import { applyEnv } from "./lib";
 import { normalizeVars, resolveDefaults, deepMerge } from "./lib";
 
 function setupCwd(): string {
@@ -169,6 +170,203 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       expect(() => init({ cwd, force: false })).toThrow(/No vars\.input\.json or vars\.json/);
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("applyEnv", () => {
+  const base = {
+    cloudflare: { workerName: "lfs-server", admin: { workerName: "lfs-admin" } },
+    s3: { bucket: "lfs-objects" },
+  };
+
+  test("appends -{env} to worker names + bucket", () => {
+    const v = applyEnv(base, "staging");
+    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
+    expect(((v.cloudflare as Record<string, Record<string, unknown>>).admin).workerName).toBe("lfs-admin-staging");
+    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
+    expect(v.env).toBe("staging");
+  });
+
+  test.each(["", "production", "prod", undefined])("env %j is identity", (e) => {
+    expect(applyEnv(base, e)).toBe(base);
+  });
+
+  test("leaves KV untouched", () => {
+    const withKv = { ...base, cloudflare: { ...base.cloudflare, kv: { githubCacheId: "abc" } } };
+    const v = applyEnv(withKv, "staging");
+    expect(((v.cloudflare as Record<string, Record<string, unknown>>).kv).githubCacheId).toBe("abc");
+  });
+
+  test("idempotent: already-suffixed value not doubled", () => {
+    const pre = {
+      cloudflare: { workerName: "lfs-server-staging", admin: { workerName: "lfs-admin-staging" } },
+      s3: { bucket: "lfs-objects-staging" },
+    };
+    const v = applyEnv(pre, "staging");
+    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
+    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
+  });
+
+  test("fills source field from defaults when input omits it", () => {
+    const v = applyEnv({}, "staging", { cloudflare: { workerName: "lfs-server" }, s3: { bucket: "lfs-objects" } });
+    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
+    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
+  });
+});
+
+describe("init env resolution", () => {
+  const ENV_INPUT = { ...FULL_INPUT, env: "dev" };
+
+  function run(cwd: string, input: Record<string, unknown>, opts: { env?: string }) {
+    writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(input));
+    init({ cwd, ...opts });
+    return JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
+  }
+
+  afterEach(() => {
+    delete process.env.GLH_ENV;
+  });
+
+  test("--env flag suffixes worker names + bucket", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, FULL_INPUT, { env: "staging" });
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+      expect(vars.cloudflare.admin.workerName).toBe("lfs-admin-staging");
+      expect(vars.s3.bucket).toBe("lfs-objects-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("--env cascades into derived lfs.server + github.appHome + adminHome", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, FULL_INPUT, { env: "staging" });
+      expect(vars.lfs.server).toBe("lfs-server-staging.slug.workers.dev");
+      expect(vars.github.appHome).toBe("https://lfs-server-staging.slug.workers.dev");
+      expect(vars.github.adminHome).toBe("https://lfs-admin-staging.slug.workers.dev");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("explicit lfs.server is not suffixed", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, { ...FULL_INPUT, lfs: { server: "my.custom.host" } }, { env: "staging" });
+      expect(vars.lfs.server).toBe("my.custom.host");
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("GLH_ENV used when no flag", () => {
+    const cwd = setupCwd();
+    try {
+      process.env.GLH_ENV = "staging";
+      const vars = run(cwd, FULL_INPUT, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("$.env in vars file used when no flag or GLH_ENV", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, ENV_INPUT, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server-dev");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("flag overrides GLH_ENV and $.env", () => {
+    const cwd = setupCwd();
+    try {
+      process.env.GLH_ENV = "fromenv";
+      const vars = run(cwd, ENV_INPUT, { env: "staging" });
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("GLH_ENV overrides $.env", () => {
+    const cwd = setupCwd();
+    try {
+      process.env.GLH_ENV = "staging";
+      const vars = run(cwd, ENV_INPUT, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("no env = prod, no suffix", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, FULL_INPUT, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server");
+      expect(vars.s3.bucket).toBe("lfs-objects");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("init GLH_VARS_JSON", () => {
+  afterEach(() => {
+    delete process.env.GLH_VARS_JSON;
+  });
+
+  test("reads vars from GLH_VARS_JSON when set", () => {
+    const cwd = setupCwd();
+    try {
+      process.env.GLH_VARS_JSON = JSON.stringify(FULL_INPUT);
+      init({ cwd });
+      const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
+      expect(vars.org).toBe("Test");
+      expect(vars.github.owner).toBe("test-org");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("GLH_VARS_JSON takes precedence over vars.input.json", () => {
+    const cwd = setupCwd();
+    try {
+      writeFileSync(join(cwd, "vars.input.json"), JSON.stringify({ ...FULL_INPUT, org: "FromFile" }));
+      process.env.GLH_VARS_JSON = JSON.stringify({ ...FULL_INPUT, org: "FromEnv" });
+      init({ cwd });
+      const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
+      expect(vars.org).toBe("FromEnv");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("throws when no GLH_VARS_JSON and no vars file", () => {
+    const cwd = setupCwd();
+    try {
+      expect(() => init({ cwd })).toThrow(/No vars\.input\.json or vars\.json.*GLH_VARS_JSON unset/);
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("combines with --env staging", () => {
+    const cwd = setupCwd();
+    try {
+      process.env.GLH_VARS_JSON = JSON.stringify(FULL_INPUT);
+      init({ cwd, env: "staging" });
+      const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
