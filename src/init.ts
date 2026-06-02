@@ -13,7 +13,6 @@ import {
   loadInputVars,
   loadDefaultVars,
   deepMerge,
-  applyEnv,
   normalizeVars,
   readVarsFile,
   error,
@@ -22,6 +21,7 @@ import {
   writeJsonFile,
   writeUtf8File,
 } from "./lib";
+import { applyEnv, enforceEnvSuffixes } from "./env";
 
 function existing(path: string): string | undefined {
   return existsSync(path) ? path : undefined;
@@ -63,9 +63,9 @@ export function init({ cwd, env }: { cwd: string; env?: string }): void {
     return renderTemplateFile(ws, relIn, vars, inputPath);
   }
 
-  writeUtf8File(ws, "wrangler.jsonc", render("server/wrangler.template.jsonc"));
+  writeUtf8File(ws, "wrangler.jsonc", enforceEnvSuffixes(render("server/wrangler.template.jsonc"), resolvedEnv));
   if (existsSync(resolve(ws, "admin"))) {
-    writeUtf8File(ws, "wrangler.admin.jsonc", render("admin/wrangler.template.jsonc"));
+    writeUtf8File(ws, "wrangler.admin.jsonc", enforceEnvSuffixes(render("admin/wrangler.template.jsonc"), resolvedEnv));
   }
   writeUtf8File(ws, "github-app.md", render("server/github-app.template.md"));
 }
