@@ -128,7 +128,7 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd, force: false });
+      init({ cwd });
       const merged = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(merged.org).toBe("Test");
       expect(existsSync(join(cwd, "wrangler.jsonc"))).toBe(true);
@@ -142,7 +142,7 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd, force: false });
+      init({ cwd });
       const merged = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(merged.org).toBe("Test");
       expect(merged.github.owner).toBe("test-org");
@@ -155,9 +155,9 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd, force: false });
+      init({ cwd });
       const firstPass = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
-      init({ cwd, force: false });
+      init({ cwd });
       const secondPass = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(secondPass).toEqual(firstPass);
     } finally {
@@ -168,7 +168,7 @@ describe("init()", () => {
   test("throws when neither vars.input.json nor vars.json present", () => {
     const cwd = setupCwd();
     try {
-      expect(() => init({ cwd, force: false })).toThrow(/No vars\.input\.json or vars\.json/);
+      expect(() => init({ cwd })).toThrow(/No vars\.input\.json or vars\.json/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }

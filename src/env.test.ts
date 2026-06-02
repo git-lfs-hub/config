@@ -9,8 +9,12 @@ describe("applyEnv", () => {
 
   test("appends -{env} to worker names + bucket", () => {
     const v = applyEnv(base, "staging");
-    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
-    expect(((v.cloudflare as Record<string, Record<string, unknown>>).admin).workerName).toBe("lfs-admin-staging");
+    const cloudflare = v.cloudflare as {
+      workerName: string;
+      admin: { workerName: string };
+    };
+    expect(cloudflare.workerName).toBe("lfs-server-staging");
+    expect(cloudflare.admin.workerName).toBe("lfs-admin-staging");
     expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
     expect(v.env).toBe("staging");
   });
@@ -22,7 +26,8 @@ describe("applyEnv", () => {
   test("leaves KV untouched", () => {
     const withKv = { ...base, cloudflare: { ...base.cloudflare, kv: { githubCacheId: "abc" } } };
     const v = applyEnv(withKv, "staging");
-    expect(((v.cloudflare as Record<string, Record<string, unknown>>).kv).githubCacheId).toBe("abc");
+    const cloudflare = v.cloudflare as { kv: { githubCacheId: string } };
+    expect(cloudflare.kv.githubCacheId).toBe("abc");
   });
 
   test("idempotent: already-suffixed value not doubled", () => {
