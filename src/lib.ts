@@ -9,7 +9,7 @@ export function error(msg: string): never {
 
 export const optionalVars: Record<string, unknown> = JSON.parse(readFileSync(new URL("../vars.optional.json", import.meta.url), "utf8"));
 
-function isPlainObject(v: unknown): v is Record<string, unknown> {
+export function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
@@ -21,48 +21,6 @@ export function deepMerge(base: Record<string, unknown>, override: Record<string
       : v;
   }
   return result;
-}
-
-const PROD_ENVS = new Set(["", "production", "prod"]);
-
-/**
- * Suffixes worker names and the S3 bucket with `-{env}` so a non-prod deploy never
- * collides with prod. Prod (env unset/production/prod) returns vars unchanged.
- * Applied to the input *before* defaults are resolved, so derived template fields
- * (lfs.server, github.appHome, github.adminHome, wrangler.name) cascade from the
- * suffixed names. `defaults` supplies the base value for any source field the input
- * omits (the common case: workerName/bucket come from vars.template.json).
- * Idempotent: a value already ending in `-{env}` is left as-is.
- */
-export function applyEnv(
-  vars: Record<string, unknown>,
-  env: string | undefined,
-  defaults: Record<string, unknown> = {},
-): Record<string, unknown> {
-  const e = (env ?? "").trim();
-  if (PROD_ENVS.has(e)) return vars;
-  const sfx = `-${e}`;
-  const suffix = (v: unknown): string => {
-    const s = String(v);
-    return s.endsWith(sfx) ? s : `${s}${sfx}`;
-  };
-  const cf = (vars.cloudflare ?? {}) as Record<string, unknown>;
-  const dcf = (defaults.cloudflare ?? {}) as Record<string, unknown>;
-  const admin = (cf.admin ?? {}) as Record<string, unknown>;
-  const dAdmin = (dcf.admin ?? {}) as Record<string, unknown>;
-  const s3 = (vars.s3 ?? {}) as Record<string, unknown>;
-  const ds3 = (defaults.s3 ?? {}) as Record<string, unknown>;
-  const workerName = cf.workerName ?? dcf.workerName;
-  const adminName = admin.workerName ?? dAdmin.workerName;
-  const bucket = s3.bucket ?? ds3.bucket;
-  return deepMerge(vars, {
-    env: e,
-    cloudflare: {
-      ...(workerName ? { workerName: suffix(workerName) } : {}),
-      ...(adminName ? { admin: { workerName: suffix(adminName) } } : {}),
-    },
-    ...(bucket ? { s3: { bucket: suffix(bucket) } } : {}),
-  });
 }
 
 function filterDefaults(defaults: Record<string, unknown>, input: Record<string, unknown>): Record<string, unknown> {

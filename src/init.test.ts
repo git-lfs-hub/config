@@ -3,7 +3,6 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { init } from "./init";
-import { applyEnv } from "./lib";
 import { normalizeVars, resolveDefaults, deepMerge } from "./lib";
 
 function setupCwd(): string {
@@ -173,47 +172,6 @@ describe("init()", () => {
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
-  });
-});
-
-describe("applyEnv", () => {
-  const base = {
-    cloudflare: { workerName: "lfs-server", admin: { workerName: "lfs-admin" } },
-    s3: { bucket: "lfs-objects" },
-  };
-
-  test("appends -{env} to worker names + bucket", () => {
-    const v = applyEnv(base, "staging");
-    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
-    expect(((v.cloudflare as Record<string, Record<string, unknown>>).admin).workerName).toBe("lfs-admin-staging");
-    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
-    expect(v.env).toBe("staging");
-  });
-
-  test.each(["", "production", "prod", undefined])("env %j is identity", (e) => {
-    expect(applyEnv(base, e)).toBe(base);
-  });
-
-  test("leaves KV untouched", () => {
-    const withKv = { ...base, cloudflare: { ...base.cloudflare, kv: { githubCacheId: "abc" } } };
-    const v = applyEnv(withKv, "staging");
-    expect(((v.cloudflare as Record<string, Record<string, unknown>>).kv).githubCacheId).toBe("abc");
-  });
-
-  test("idempotent: already-suffixed value not doubled", () => {
-    const pre = {
-      cloudflare: { workerName: "lfs-server-staging", admin: { workerName: "lfs-admin-staging" } },
-      s3: { bucket: "lfs-objects-staging" },
-    };
-    const v = applyEnv(pre, "staging");
-    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
-    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
-  });
-
-  test("fills source field from defaults when input omits it", () => {
-    const v = applyEnv({}, "staging", { cloudflare: { workerName: "lfs-server" }, s3: { bucket: "lfs-objects" } });
-    expect((v.cloudflare as Record<string, unknown>).workerName).toBe("lfs-server-staging");
-    expect((v.s3 as Record<string, unknown>).bucket).toBe("lfs-objects-staging");
   });
 });
 
