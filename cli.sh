@@ -15,6 +15,8 @@ bun run config/src/cli.ts "$@"
 link docs/vars.json -sf ../vars.json
 rsync -ahi --out-format='sync %f -> docs/%f' assets/ docs/assets | awk '!/[/]\.?$/'
 
+link e2e/vars.json -sf ../vars.json
+
 link server/wrangler.jsonc -sf ../wrangler.jsonc
 link server/worker-configuration.d.ts -sf ../worker-configuration.d.ts
 link server/public -sfn ../docs/site
