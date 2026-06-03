@@ -2,8 +2,13 @@ import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { init } from "./init";
+import { init as initImpl } from "./init";
 import { normalizeVars, resolveDefaults, deepMerge } from "./lib";
+
+// Mirrors cli.ts monorepo layout: templates under server/ + admin/, output at root.
+function init({ cwd, env }: { cwd: string; env?: string }): void {
+  initImpl({ varsDir: cwd, outDir: cwd, serverDir: join(cwd, "server"), adminDir: join(cwd, "admin"), env });
+}
 
 function setupCwd(): string {
   const cwd = mkdtempSync(join(tmpdir(), "config-init-"));
@@ -171,6 +176,42 @@ describe("init()", () => {
       expect(() => init({ cwd })).toThrow(/No vars\.input\.json or vars\.json/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("init() standalone", () => {
+  function setupStandalone(): string {
+    const root = mkdtempSync(join(tmpdir(), "config-standalone-"));
+    writeFileSync(join(root, "wrangler.template.jsonc"), `{ "name": "{{cloudflare.workerName}}", "org": "{{org}}" }\n`);
+    writeFileSync(join(root, "github-app.template.md"), `# {{org}}\n`);
+    writeFileSync(join(root, "vars.input.json"), JSON.stringify(FULL_INPUT));
+    return root;
+  }
+
+  test("varsDir = serverDir = outDir = repo root; admin skipped", () => {
+    const root = setupStandalone();
+    try {
+      initImpl({ varsDir: root, outDir: root, serverDir: root });
+      expect(existsSync(join(root, "wrangler.jsonc"))).toBe(true);
+      expect(existsSync(join(root, "github-app.md"))).toBe(true);
+      expect(existsSync(join(root, "wrangler.admin.jsonc"))).toBe(false);
+      const merged = JSON.parse(readFileSync(join(root, "vars.json"), "utf8"));
+      expect(merged.org).toBe("Test");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("admin-only render writes plain wrangler.jsonc (no .admin. suffix)", () => {
+    const root = setupStandalone();
+    try {
+      initImpl({ varsDir: root, outDir: root, adminDir: root });
+      expect(existsSync(join(root, "wrangler.jsonc"))).toBe(true);
+      expect(existsSync(join(root, "wrangler.admin.jsonc"))).toBe(false);
+      expect(existsSync(join(root, "github-app.md"))).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   });
 });

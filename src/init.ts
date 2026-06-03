@@ -1,9 +1,14 @@
 /**
- * Renders deployment artifacts from Handlebars templates in `cwd`:
- * - vars.json    ← vars.input.json (or vars.json) merged with vars.template.json
- * - wrangler.jsonc ← server/wrangler.template.jsonc
- * - wrangler.admin.jsonc ← admin/wrangler.template.jsonc
- * - github-app.md  ← server/github-app.template.md
+ * Renders deployment artifacts from Handlebars templates. Source and output dirs
+ * are passed explicitly (cli.ts derives them from --ws / --server / --admin):
+ * - vars.json            ← {varsDir}/vars.input.json (or vars.json) merged with vars.template.json
+ * - wrangler.jsonc       ← {serverDir}/wrangler.template.jsonc
+ * - github-app.md        ← {serverDir}/github-app.template.md
+ * - wrangler[.admin].jsonc ← {adminDir}/wrangler.template.jsonc   (.admin. suffix only when a server is also rendered)
+ * All outputs are written to {outDir}.
+ *
+ * Monorepo: varsDir/outDir = ws, serverDir = ws/server, adminDir = ws/admin (both rendered).
+ * Standalone: varsDir = outDir = the single repo root, and exactly one of serverDir/adminDir set to it.
  */
 
 import { existsSync } from "node:fs";
@@ -29,16 +34,26 @@ function existing(path: string): string | undefined {
 
 const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-export function init({ cwd, env }: { cwd: string; env?: string }): void {
-  const ws = resolve(cwd);
+export interface InitDirs {
+  /** Reads vars.input.json (or vars.json) and writes vars.json. */
+  varsDir: string;
+  /** Writes the rendered artifacts. */
+  outDir: string;
+  /** Reads wrangler.template.jsonc + github-app.template.md for the server Worker. */
+  serverDir?: string;
+  /** Reads wrangler.template.jsonc for the admin Worker. Skipped if unset or absent. */
+  adminDir?: string;
+  env?: string;
+}
 
+export function init({ varsDir, outDir, serverDir, adminDir, env }: InitDirs): void {
   // Precedence: GLH_VARS_JSON env > vars.input.json > vars.json.
   const varsJson = process.env.GLH_VARS_JSON;
   const inputPath = varsJson
     ? "$GLH_VARS_JSON"
-    : existing(resolve(ws, "vars.input.json")) ??
-      existing(resolve(ws, "vars.json")) ??
-      error(`No vars.input.json or vars.json in ${ws}, and GLH_VARS_JSON unset`);
+    : existing(resolve(varsDir, "vars.input.json")) ??
+      existing(resolve(varsDir, "vars.json")) ??
+      error(`No vars.input.json or vars.json in ${varsDir}, and GLH_VARS_JSON unset`);
 
   const input = varsJson
     ? normalizeVars(JSON.parse(varsJson) as Record<string, unknown>)
@@ -57,15 +72,19 @@ export function init({ cwd, env }: { cwd: string; env?: string }): void {
   });
   const vars = deepMerge(defaults, envInput);
   validateSchema(pkg, vars, "vars.schema.json");
-  writeJsonFile(ws, "vars.json", vars);
+  writeJsonFile(varsDir, "vars.json", vars);
 
-  function render(relIn: string): string {
-    return renderTemplateFile(ws, relIn, vars, inputPath);
+  function render(dir: string, file: string): string {
+    return renderTemplateFile(dir, file, vars, inputPath);
   }
 
-  writeUtf8File(ws, "wrangler.jsonc", enforceEnvSuffixes(render("server/wrangler.template.jsonc"), resolvedEnv));
-  if (existsSync(resolve(ws, "admin"))) {
-    writeUtf8File(ws, "wrangler.admin.jsonc", enforceEnvSuffixes(render("admin/wrangler.template.jsonc"), resolvedEnv));
+  if (serverDir) {
+    writeUtf8File(outDir, "wrangler.jsonc", enforceEnvSuffixes(render(serverDir, "wrangler.template.jsonc"), resolvedEnv));
+    writeUtf8File(outDir, "github-app.md", render(serverDir, "github-app.template.md"));
   }
-  writeUtf8File(ws, "github-app.md", render("server/github-app.template.md"));
+  if (adminDir && existsSync(adminDir)) {
+    // Suffix the output only when it shares outDir with a server render (monorepo).
+    const adminOut = serverDir ? "wrangler.admin.jsonc" : "wrangler.jsonc";
+    writeUtf8File(outDir, adminOut, enforceEnvSuffixes(render(adminDir, "wrangler.template.jsonc"), resolvedEnv));
+  }
 }
