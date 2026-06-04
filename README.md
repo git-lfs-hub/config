@@ -76,7 +76,7 @@ The deploy env appends a `-{env}` suffix to `cloudflare.workerName`, `cloudflare
 
 1. **`--env <name>`** CLI flag.
 2. **`GLH_ENV`** env var.
-3. **`env`** field inside the resolved vars.
+3. **`env`** field in **`.config.json`** at the deploy root (on-disk pin; survives turbo's strict-env stripping that `GLH_ENV` can't).
 
 `""`, `production`, `prod`, or unset mean production and add **no** suffix; any other value appends `-{value}` (e.g. `staging` → `…-staging`).
 

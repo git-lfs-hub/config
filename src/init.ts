@@ -46,6 +46,12 @@ export interface InitDirs {
   env?: string;
 }
 
+/** On-disk pin for the deploy env; survives turbo strict-env stripping that GLH_ENV can't. */
+function readDotConfigEnv(dir: string): string | undefined {
+  const path = existing(resolve(dir, ".config.json"));
+  return path ? (readVarsFile("", path).env as string | undefined) : undefined;
+}
+
 export function init({ varsDir, outDir, serverDir, adminDir, env }: InitDirs): void {
   // Precedence: GLH_VARS_JSON env > vars.input.json > vars.json.
   const varsJson = process.env.GLH_VARS_JSON;
@@ -62,8 +68,8 @@ export function init({ varsDir, outDir, serverDir, adminDir, env }: InitDirs): v
   // Suffix the source fields (workerName, admin.workerName, bucket) before
   // resolving defaults, so derived fields (lfs.server, github.appHome,
   // github.adminHome) cascade from the suffixed names.
-  // Precedence: --env flag > GLH_ENV > $.env in vars file.
-  const resolvedEnv = env ?? process.env.GLH_ENV ?? (input.env as string | undefined);
+  // Precedence: --env flag > GLH_ENV > .config.json.
+  const resolvedEnv = env ?? process.env.GLH_ENV ?? readDotConfigEnv(varsDir);
   const templateDefaults = readVarsFile(pkg, "vars.template.json");
   const envInput = applyEnv(input, resolvedEnv, templateDefaults);
 
