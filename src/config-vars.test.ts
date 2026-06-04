@@ -1,40 +1,12 @@
 import { describe, test, expect, afterEach } from "vitest";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { init as initImpl } from "./init";
+import { configVars } from "./config-vars";
 import { normalizeVars, resolveDefaults, deepMerge } from "./lib";
 
-// Mirrors cli.ts monorepo layout: templates under server/ + admin/, output at root.
-function init({ cwd, env }: { cwd: string; env?: string }): void {
-  initImpl({ varsDir: cwd, outDir: cwd, serverDir: join(cwd, "server"), adminDir: join(cwd, "admin"), env });
-}
-
 function setupCwd(): string {
-  const cwd = mkdtempSync(join(tmpdir(), "config-init-"));
-  mkdirSync(join(cwd, "server", "test"), { recursive: true });
-  mkdirSync(join(cwd, "admin"), { recursive: true });
-  writeFileSync(
-    join(cwd, "server", "wrangler.template.jsonc"),
-    `{ "org": "{{org}}", "accountId": "{{cloudflare.accountId}}" }\n`,
-  );
-  writeFileSync(
-    join(cwd, "admin", "wrangler.template.jsonc"),
-    `{ "org": "{{org}}", "accountId": "{{cloudflare.accountId}}" }\n`,
-  );
-  writeFileSync(
-    join(cwd, "server", "github-app.template.md"),
-    `# {{org}}\n`,
-  );
-  writeFileSync(
-    join(cwd, "server", "test", "vars.test.json"),
-    `{}\n`,
-  );
-  writeFileSync(
-    join(cwd, "server", "test", "wrangler.test.json"),
-    `{}\n`,
-  );
-  return cwd;
+  return mkdtempSync(join(tmpdir(), "config-vars-"));
 }
 
 const FULL_INPUT = {
@@ -128,16 +100,14 @@ describe("resolveVars", () => {
   });
 });
 
-describe("init()", () => {
+describe("configVars()", () => {
   test("reads vars.input.json when present, writes vars.json", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const merged = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(merged.org).toBe("Test");
-      expect(existsSync(join(cwd, "wrangler.jsonc"))).toBe(true);
-      expect(existsSync(join(cwd, "github-app.md"))).toBe(true);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
@@ -147,7 +117,7 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const merged = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(merged.org).toBe("Test");
       expect(merged.github.owner).toBe("test-org");
@@ -160,9 +130,9 @@ describe("init()", () => {
     const cwd = setupCwd();
     try {
       writeFileSync(join(cwd, "vars.json"), JSON.stringify(FULL_INPUT));
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const firstPass = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const secondPass = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(secondPass).toEqual(firstPass);
     } finally {
@@ -173,53 +143,17 @@ describe("init()", () => {
   test("throws when neither vars.input.json nor vars.json present", () => {
     const cwd = setupCwd();
     try {
-      expect(() => init({ cwd })).toThrow(/No vars\.input\.json or vars\.json/);
+      expect(() => configVars({ varsDir: cwd })).toThrow(/No vars\.input\.json or vars\.json/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
 });
 
-describe("init() standalone", () => {
-  function setupStandalone(): string {
-    const root = mkdtempSync(join(tmpdir(), "config-standalone-"));
-    writeFileSync(join(root, "wrangler.template.jsonc"), `{ "name": "{{cloudflare.workerName}}", "org": "{{org}}" }\n`);
-    writeFileSync(join(root, "github-app.template.md"), `# {{org}}\n`);
-    writeFileSync(join(root, "vars.input.json"), JSON.stringify(FULL_INPUT));
-    return root;
-  }
-
-  test("varsDir = serverDir = outDir = repo root; admin skipped", () => {
-    const root = setupStandalone();
-    try {
-      initImpl({ varsDir: root, outDir: root, serverDir: root });
-      expect(existsSync(join(root, "wrangler.jsonc"))).toBe(true);
-      expect(existsSync(join(root, "github-app.md"))).toBe(true);
-      expect(existsSync(join(root, "wrangler.admin.jsonc"))).toBe(false);
-      const merged = JSON.parse(readFileSync(join(root, "vars.json"), "utf8"));
-      expect(merged.org).toBe("Test");
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  test("admin-only render writes plain wrangler.jsonc (no .admin. suffix)", () => {
-    const root = setupStandalone();
-    try {
-      initImpl({ varsDir: root, outDir: root, adminDir: root });
-      expect(existsSync(join(root, "wrangler.jsonc"))).toBe(true);
-      expect(existsSync(join(root, "wrangler.admin.jsonc"))).toBe(false);
-      expect(existsSync(join(root, "github-app.md"))).toBe(false);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-});
-
-describe("init env resolution", () => {
+describe("configVars env resolution", () => {
   function run(cwd: string, input: Record<string, unknown>, opts: { env?: string }) {
     writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(input));
-    init({ cwd, ...opts });
+    configVars({ varsDir: cwd, ...opts });
     return JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
   }
 
@@ -362,7 +296,7 @@ describe("init env resolution", () => {
   });
 });
 
-describe("init GLH_VARS_JSON", () => {
+describe("configVars GLH_VARS_JSON", () => {
   afterEach(() => {
     delete process.env.GLH_VARS_JSON;
   });
@@ -371,7 +305,7 @@ describe("init GLH_VARS_JSON", () => {
     const cwd = setupCwd();
     try {
       process.env.GLH_VARS_JSON = JSON.stringify(FULL_INPUT);
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(vars.org).toBe("Test");
       expect(vars.github.owner).toBe("test-org");
@@ -385,7 +319,7 @@ describe("init GLH_VARS_JSON", () => {
     try {
       writeFileSync(join(cwd, "vars.input.json"), JSON.stringify({ ...FULL_INPUT, org: "FromFile" }));
       process.env.GLH_VARS_JSON = JSON.stringify({ ...FULL_INPUT, org: "FromEnv" });
-      init({ cwd });
+      configVars({ varsDir: cwd });
       const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(vars.org).toBe("FromEnv");
     } finally {
@@ -396,7 +330,7 @@ describe("init GLH_VARS_JSON", () => {
   test("throws when no GLH_VARS_JSON and no vars file", () => {
     const cwd = setupCwd();
     try {
-      expect(() => init({ cwd })).toThrow(/No vars\.input\.json or vars\.json.*GLH_VARS_JSON unset/);
+      expect(() => configVars({ varsDir: cwd })).toThrow(/No vars\.input\.json or vars\.json.*GLH_VARS_JSON unset/);
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
@@ -406,7 +340,7 @@ describe("init GLH_VARS_JSON", () => {
     const cwd = setupCwd();
     try {
       process.env.GLH_VARS_JSON = JSON.stringify(FULL_INPUT);
-      init({ cwd, env: "staging" });
+      configVars({ varsDir: cwd, env: "staging" });
       const vars = JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
       expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
     } finally {

@@ -10,18 +10,16 @@ link() {
   (cd "$(dirname "$target")" && ln "$args" "$@" "$(basename "$target")")
 }
 
-bun run config/src/cli.ts "$@"
+bun run config/src/cli.ts vars . "$@"
 
 link docs/vars.json -sf ../vars.json
 rsync -ahi --out-format='sync %f -> docs/%f' assets/ docs/assets | awk '!/[/]\.?$/'
 
 link e2e/vars.json -sf ../vars.json
 
-link server/wrangler.jsonc -sf ../wrangler.jsonc
-link server/worker-configuration.d.ts -sf ../worker-configuration.d.ts
+link server/vars.json -sf ../vars.json
 link server/public -sfn ../docs/site
 
 if [ -d admin ]; then
-    link admin/wrangler.jsonc -sf ../wrangler.admin.jsonc
-    link admin/worker-configuration.d.ts -sf ../worker-configuration.admin.d.ts
+    link admin/vars.json -sf ../vars.json
 fi

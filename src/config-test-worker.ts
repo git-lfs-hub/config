@@ -20,7 +20,7 @@ import {
 
 const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-export function initTestWorker({ templateDir, testDir }: { templateDir: string; testDir: string }): void {
+export function configTestWorker({ templateDir, testDir }: { templateDir: string; testDir: string }): void {
   const testVarsPath = resolve(testDir, "vars.test.json");
   const wranglerPatchPath = resolve(testDir, "wrangler.test.json");
   const templatePath = resolve(templateDir, "wrangler.template.jsonc");
