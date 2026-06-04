@@ -7,7 +7,7 @@
   },
   "scripts": {
     "compile": "tsgo --noEmit -p tsconfig.json",
-    "-pretest": "bun run compile",
+    "pretest": "bun run compile",
     "test": "bun --bun vitest run",
     "test:watch": "bun --bun vitest watch",
     "test-coverage": "bun run test --coverage"
