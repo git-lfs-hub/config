@@ -14,8 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Initialize
-        uses: ./.github/actions/init
+      - uses: git-lfs-hub/ci-cd/actions/init-bun@main
 
       - run: bun test-coverage
 

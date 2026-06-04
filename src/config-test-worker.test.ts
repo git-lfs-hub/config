@@ -2,14 +2,14 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { initTestWorker } from "./init-test-worker";
+import { configTestWorker } from "./config-test-worker";
 
 function setup(opts: {
   template: string;
   testVars: unknown;
   wranglerPatch: unknown;
 }): { templateDir: string; testDir: string; cleanup: () => void } {
-  const root = mkdtempSync(join(tmpdir(), "config-init-test-worker-"));
+  const root = mkdtempSync(join(tmpdir(), "config-test-worker-"));
   const templateDir = join(root, "tpl");
   const testDir = join(root, "test");
   mkdirSync(templateDir, { recursive: true });
@@ -28,7 +28,7 @@ function readOut(testDir: string): Record<string, unknown> {
   return JSON.parse(readFileSync(join(testDir, "wrangler.jsonc"), "utf8"));
 }
 
-describe("initTestWorker", () => {
+describe("configTestWorker", () => {
   test("renders template with testVars overriding package defaults", () => {
     const { templateDir, testDir, cleanup } = setup({
       template: `{ "name": "{{cloudflare.workerName}}", "bucket": "{{s3.bucket}}" }\n`,
@@ -36,7 +36,7 @@ describe("initTestWorker", () => {
       wranglerPatch: {},
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       const out = readOut(testDir);
       expect(out.name).toBe("test-worker");
       expect(out.bucket).toBe("lfs-objects");
@@ -52,7 +52,7 @@ describe("initTestWorker", () => {
       wranglerPatch: {},
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       expect(readOut(testDir).name).toBe("lfs-server");
     } finally {
       cleanup();
@@ -66,7 +66,7 @@ describe("initTestWorker", () => {
       wranglerPatch: {},
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       const out = readOut(testDir);
       expect(out.org).toBe("");
       expect(out.user).toBe("");
@@ -87,7 +87,7 @@ describe("initTestWorker", () => {
       },
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       const out = readOut(testDir);
       expect(out.vars).toEqual({ A: "overridden", B: "2", C: "added" });
       expect(out.compatibility_flags).toEqual(["nodejs_compat"]);
@@ -104,7 +104,7 @@ describe("initTestWorker", () => {
       wranglerPatch: { observability: null, upload_source_maps: null },
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       const out = readOut(testDir);
       expect(out).not.toHaveProperty("observability");
       expect(out).not.toHaveProperty("upload_source_maps");
@@ -121,7 +121,7 @@ describe("initTestWorker", () => {
       wranglerPatch: {},
     });
     try {
-      initTestWorker({ templateDir, testDir });
+      configTestWorker({ templateDir, testDir });
       expect(readOut(testDir).name).toBe("lfs-server");
     } finally {
       cleanup();
@@ -129,7 +129,7 @@ describe("initTestWorker", () => {
   });
 
   test("throws on missing wrangler.template.jsonc", () => {
-    const root = mkdtempSync(join(tmpdir(), "config-init-test-worker-"));
+    const root = mkdtempSync(join(tmpdir(), "config-test-worker-"));
     const templateDir = join(root, "tpl");
     const testDir = join(root, "test");
     mkdirSync(templateDir, { recursive: true });
@@ -137,7 +137,7 @@ describe("initTestWorker", () => {
     writeFileSync(join(testDir, "vars.test.json"), "{}");
     writeFileSync(join(testDir, "wrangler.test.json"), "{}");
     try {
-      expect(() => initTestWorker({ templateDir, testDir })).toThrow();
+      expect(() => configTestWorker({ templateDir, testDir })).toThrow();
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
