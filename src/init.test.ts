@@ -217,12 +217,14 @@ describe("init() standalone", () => {
 });
 
 describe("init env resolution", () => {
-  const ENV_INPUT = { ...FULL_INPUT, env: "dev" };
-
   function run(cwd: string, input: Record<string, unknown>, opts: { env?: string }) {
     writeFileSync(join(cwd, "vars.input.json"), JSON.stringify(input));
     init({ cwd, ...opts });
     return JSON.parse(readFileSync(join(cwd, "vars.json"), "utf8"));
+  }
+
+  function writeDotConfig(cwd: string, env: string) {
+    writeFileSync(join(cwd, ".config.json"), JSON.stringify({ env }));
   }
 
   afterEach(() => {
@@ -275,33 +277,56 @@ describe("init env resolution", () => {
     }
   });
 
-  test("$.env in vars file used when no flag or GLH_ENV", () => {
-    const cwd = setupCwd();
-    try {
-      const vars = run(cwd, ENV_INPUT, {});
-      expect(vars.cloudflare.workerName).toBe("lfs-server-dev");
-    } finally {
-      rmSync(cwd, { recursive: true, force: true });
-    }
-  });
-
-  test("flag overrides GLH_ENV and $.env", () => {
+  test("flag overrides GLH_ENV", () => {
     const cwd = setupCwd();
     try {
       process.env.GLH_ENV = "fromenv";
-      const vars = run(cwd, ENV_INPUT, { env: "staging" });
+      const vars = run(cwd, FULL_INPUT, { env: "staging" });
       expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
 
-  test("GLH_ENV overrides $.env", () => {
+  test(".config.json env used when no flag or GLH_ENV", () => {
     const cwd = setupCwd();
     try {
-      process.env.GLH_ENV = "staging";
-      const vars = run(cwd, ENV_INPUT, {});
+      writeDotConfig(cwd, "staging");
+      const vars = run(cwd, FULL_INPUT, {});
       expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("GLH_ENV overrides .config.json", () => {
+    const cwd = setupCwd();
+    try {
+      writeDotConfig(cwd, "fromfile");
+      process.env.GLH_ENV = "staging";
+      const vars = run(cwd, FULL_INPUT, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("flag overrides .config.json", () => {
+    const cwd = setupCwd();
+    try {
+      writeDotConfig(cwd, "fromfile");
+      const vars = run(cwd, FULL_INPUT, { env: "staging" });
+      expect(vars.cloudflare.workerName).toBe("lfs-server-staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("env in vars file is ignored (obsolete $.env support removed)", () => {
+    const cwd = setupCwd();
+    try {
+      const vars = run(cwd, { ...FULL_INPUT, env: "dev" }, {});
+      expect(vars.cloudflare.workerName).toBe("lfs-server");
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
