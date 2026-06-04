@@ -342,6 +342,24 @@ describe("init env resolution", () => {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
+
+  test("renders the resolved env into vars.json", () => {
+    const cwd = setupCwd();
+    try {
+      expect(run(cwd, FULL_INPUT, { env: "staging" }).env).toBe("staging");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test("renders an empty env for prod", () => {
+    const cwd = setupCwd();
+    try {
+      expect(run(cwd, { ...FULL_INPUT, env: "dev" }, {}).env).toBe("");
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("init GLH_VARS_JSON", () => {

@@ -77,6 +77,10 @@ export function init({ varsDir, outDir, serverDir, adminDir, env }: InitDirs): v
     vars: inputPath,
   });
   const vars = deepMerge(defaults, envInput);
+  // applyEnv only writes `env` for non-prod (it no-ops on prod). Pin it here for
+  // every env so vars.json is authoritative — it feeds wrangler's ENV var
+  // ({{env}}) and the deploy-target assertion.
+  vars.env = (resolvedEnv ?? "").trim();
   validateSchema(pkg, vars, "vars.schema.json");
   writeJsonFile(varsDir, "vars.json", vars);
 
