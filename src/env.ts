@@ -1,10 +1,12 @@
-import { deepMerge, isPlainObject } from "./lib";
+import { deepMerge, isPlainObject } from './lib';
 
-const PROD_ENVS = new Set(["", "production", "prod"]);
+const PROD_ENVS = new Set(['', 'production', 'prod']);
 
 /** null for prod (env unset/production/prod); otherwise an idempotent `-{env}` suffixer. */
-function envSuffixer(env: string | undefined): { env: string; suffix: (v: unknown) => string } | null {
-  const e = (env ?? "").trim();
+function envSuffixer(
+  env: string | undefined,
+): { env: string; suffix: (v: unknown) => string } | null {
+  const e = (env ?? '').trim();
   if (PROD_ENVS.has(e)) return null;
   const sfx = `-${e}`;
   const suffix = (v: unknown): string => {
@@ -61,22 +63,22 @@ export function enforceEnvSuffixes(wrangler: string, env: string | undefined): s
   if (!s) return wrangler;
   const config = Bun.JSONC.parse(wrangler) as Record<string, unknown>;
 
-  if (typeof config.name === "string") config.name = s.suffix(config.name);
+  if (typeof config.name === 'string') config.name = s.suffix(config.name);
 
   for (const b of asObjects(config.r2_buckets)) {
-    if (typeof b.bucket_name === "string") b.bucket_name = s.suffix(b.bucket_name);
+    if (typeof b.bucket_name === 'string') b.bucket_name = s.suffix(b.bucket_name);
   }
   // The presign var must track the bucket binding.
   const vars = config.vars;
-  if (isPlainObject(vars) && typeof vars.S3_BUCKET_NAME === "string") {
+  if (isPlainObject(vars) && typeof vars.S3_BUCKET_NAME === 'string') {
     vars.S3_BUCKET_NAME = s.suffix(vars.S3_BUCKET_NAME);
   }
 
   for (const wf of asObjects(config.workflows)) {
-    if (typeof wf.name === "string") wf.name = s.suffix(wf.name);
+    if (typeof wf.name === 'string') wf.name = s.suffix(wf.name);
   }
 
-  return JSON.stringify(config, null, 2) + "\n";
+  return JSON.stringify(config, null, 2) + '\n';
 }
 
 /** Array elements that are plain objects; [] for non-arrays. */
