@@ -2,13 +2,13 @@ name: Main
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
 
   workflow_dispatch: # Can run this workflow manually from the Actions tab
 
 jobs:
   test:
-    name: "Test"
+    name: 'Test'
     runs-on: ubuntu-latest
 
     steps:

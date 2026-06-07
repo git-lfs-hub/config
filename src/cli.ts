@@ -1,40 +1,41 @@
 #!/usr/bin/env bun
-import { parseArgs } from "node:util";
-import { resolve } from "node:path";
-import { configVars } from "./config-vars";
-import { configWorker } from "./config-worker";
-import { configTestWorker } from "./config-test-worker";
-import { validate } from "./validate";
+import { resolve } from 'node:path';
+import { parseArgs } from 'node:util';
+
+import { configTestWorker } from './config-test-worker';
+import { configVars } from './config-vars';
+import { configWorker } from './config-worker';
+import { validate } from './validate';
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
   options: {
-    env: { type: "string" },
+    env: { type: 'string' },
   },
   allowPositionals: true,
 });
 
 const cmd = positionals[0];
-const dir = resolve(positionals[1] ?? ".");
+const dir = resolve(positionals[1] ?? '.');
 
 switch (cmd) {
-  case "vars":
+  case 'vars':
     configVars({ varsDir: dir, env: values.env });
     break;
-  case "worker":
+  case 'worker':
     configWorker({ workerDir: dir });
     break;
-  case "test-worker": {
+  case 'test-worker': {
     const templateDir = positionals[1];
     const testDir = positionals[2];
     if (!templateDir || !testDir) {
-      console.error("usage: test-worker <template-dir> <test-dir>");
+      console.error('usage: test-worker <template-dir> <test-dir>');
       process.exit(2);
     }
     configTestWorker({ templateDir, testDir });
     break;
   }
-  case "validate":
+  case 'validate':
     validate({ cwd: dir });
     break;
   default:
