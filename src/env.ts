@@ -50,13 +50,11 @@ export function applyEnv(
 }
 
 /**
- * Safety net over the rendered config: re-applies `-{env}` to the same account-
- * global identifiers applyEnv suffixes at the vars layer, in case a hardcoded
- * template or vars bypassed it. An unsuffixed identifier silently overwrites the
- * prod worker, shares the prod bucket, or collides with the prod workflow.
- * Resource-scoped names (DO bindings/classes, KV bindings) don't collide across
- * workers, so they're left alone. Comments are dropped (re-emitted as JSON) —
- * fine, the output is gitignored and only wrangler consumes it.
+ * Safety net over the rendered config, in case a hardcoded template/vars bypassed
+ * applyEnv. Suffixes account-global names (worker, bucket, workflow, queue) — an
+ * unsuffixed one silently clobbers/shares the prod resource. Resource-scoped names
+ * (DO bindings/classes, KV bindings) don't collide across workers, so left alone.
+ * Comments dropped (re-emitted as JSON) — output gitignored, only wrangler reads it.
  */
 export function enforceEnvSuffixes(wrangler: string, env: string | undefined): string {
   const s = envSuffixer(env);
@@ -76,6 +74,15 @@ export function enforceEnvSuffixes(wrangler: string, env: string | undefined): s
 
   for (const wf of asObjects(config.workflows)) {
     if (typeof wf.name === 'string') wf.name = s.suffix(wf.name);
+  }
+
+  const queues = config.queues;
+  if (isPlainObject(queues)) {
+    for (const key of ['producers', 'consumers']) {
+      for (const q of asObjects(queues[key])) {
+        if (typeof q.queue === 'string') q.queue = s.suffix(q.queue);
+      }
+    }
   }
 
   return JSON.stringify(config, null, 2) + '\n';

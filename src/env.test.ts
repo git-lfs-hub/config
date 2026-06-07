@@ -59,6 +59,10 @@ describe('enforceEnvSuffixes', () => {
   "r2_buckets": [{ "binding": "LFS_BUCKET", "bucket_name": "lfs-objects" }],
   "durable_objects": { "bindings": [{ "name": "LOCKS", "class_name": "Locks" }] },
   "workflows": [{ "name": "migration", "binding": "MIGRATION", "class_name": "Migration" }],
+  "queues": {
+    "producers": [{ "binding": "OBJECT_EVENTS", "queue": "lfs-object-events" }],
+    "consumers": [{ "queue": "lfs-object-events" }]
+  },
   "vars": { "S3_BUCKET_NAME": "lfs-objects", "S3_ENDPOINT": "https://r2" }
 }`;
 
@@ -72,6 +76,8 @@ describe('enforceEnvSuffixes', () => {
     expect(c.r2_buckets[0].bucket_name).toBe('lfs-objects-dev');
     expect(c.vars.S3_BUCKET_NAME).toBe('lfs-objects-dev');
     expect(c.workflows[0].name).toBe('migration-dev');
+    expect(c.queues.producers[0].queue).toBe('lfs-object-events-dev');
+    expect(c.queues.consumers[0].queue).toBe('lfs-object-events-dev');
   });
 
   test('leaves resource-scoped + unrelated fields alone', () => {
