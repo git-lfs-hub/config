@@ -421,4 +421,14 @@ describe('end-to-end: buildVars + renderTemplate', () => {
     const out = renderTemplate('"GITHUB_ORG": "{{github.org}}"', vars);
     expect(out).toBe('"GITHUB_ORG": "myorg"');
   });
+
+  test('json helper embeds a vars.json object', () => {
+    const vars = normalizeVars({
+      gc: { autoArchiveDays: 7, autoClearDays: 30, coldStorage: '' },
+    });
+    const out = renderTemplate('"GC": {{{json gc}}}', vars);
+    expect(out).toBe(
+      '"GC": {"autoArchiveDays":7,"autoClearDays":30,"coldStorage":""}',
+    );
+  });
 });

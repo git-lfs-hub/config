@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import Ajv, { type AnySchema } from 'ajv';
 import Handlebars from 'handlebars';
 
+Handlebars.registerHelper('json', (value: unknown) => JSON.stringify(value));
+
 export function error(msg: string): never {
   throw new Error(msg);
 }
