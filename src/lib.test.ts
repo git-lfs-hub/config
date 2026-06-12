@@ -446,8 +446,6 @@ describe('end-to-end: buildVars + renderTemplate', () => {
       gc: { autoArchiveDays: 7, autoClearDays: 30, coldStorage: '' },
     });
     const out = renderTemplate('"GC": {{{json gc}}}', vars);
-    expect(out).toBe(
-      '"GC": {"autoArchiveDays":7,"autoClearDays":30,"coldStorage":""}',
-    );
+    expect(out).toBe('"GC": {"autoArchiveDays":7,"autoClearDays":30,"coldStorage":""}');
   });
 });
