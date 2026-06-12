@@ -227,6 +227,25 @@ describe('renderTemplate error reporting', () => {
       expect(msg).toContain('vars: undefined');
     }
   });
+
+  test('reports missing vars property for a top-level placeholder', () => {
+    try {
+      renderTemplate('{{missing}}', {});
+      expect.unreachable();
+    } catch (e) {
+      expect((e as Error).message).toContain('missing vars property: missing');
+    }
+  });
+
+  test('reports missing vars property for a nested json helper path', () => {
+    const source = '{\n  "slack": {{{json admin.slack}}}\n}';
+    try {
+      renderTemplate(source, normalizeVars({ org: 'Test' }));
+      expect.unreachable();
+    } catch (e) {
+      expect((e as Error).message).toContain('missing vars property: admin.slack');
+    }
+  });
 });
 
 describe('validateSchema', () => {

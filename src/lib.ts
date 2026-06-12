@@ -138,17 +138,31 @@ export function renderTemplate(
   } catch (e) {
     const err = e instanceof Error ? e.message : String(e);
     const msg = [err];
-    for (const [k, v] of Object.entries(context ?? {})) {
-      msg.push(`  ${k}: ${v}`);
-    }
+    for (const [k, v] of Object.entries(context ?? {})) msg.push(`  ${k}: ${v}`);
     const match = err.match(/ - (\d+):(\d+)$/);
     if (match) {
       const lines = source.split('\n');
       const lineNo = parseInt(match[1]!);
       const colNo = parseInt(match[2]!);
       const prefix = `line ${lineNo}: `;
-      msg.push(`  ${prefix}${lines[lineNo - 1] ?? ''}`);
-      msg.push(`  ${' '.repeat(prefix.length + colNo - 1)}^`);
+      const line = lines[lineNo - 1] ?? '';
+      msg.push(`  ${prefix}${line}`, `  ${' '.repeat(prefix.length + colNo - 1)}^`);
+      const path =
+        err.match(/^"([^"]+)" not defined in /)?.[1] ??
+        line.match(/(?:json\s+)?([a-zA-Z_][\w.]*)(?=\s*\})/)?.[1];
+      if (path) msg.push(`  missing vars property: ${path}`);
+    } else {
+      for (const m of source.matchAll(/\{\{\{json\s+([a-zA-Z_][\w.]*)\s*\}\}\}/g)) {
+        let cur: unknown = vars;
+        for (const part of m[1]!.split('.')) {
+          if (cur == null || typeof cur !== 'object' || !Object.hasOwn(cur as object, part)) {
+            msg.push(`  missing vars property: ${m[1]}`);
+            break;
+          }
+          cur = (cur as Record<string, unknown>)[part];
+        }
+        if (msg.at(-1)?.startsWith('  missing vars')) break;
+      }
     }
     throw new Error(msg.join('\n'));
   }
@@ -194,3 +208,4 @@ export function validateSchema(
     throw new Error(`${schemaPath}: ${e instanceof Error ? e.message : e}`);
   }
 }
+
