@@ -27,5 +27,8 @@
     "liveStorageRetentionDays": 30,
     "coldStorageRetentionDays": 365,
     "coldStorage": ""
+  },
+  "admin": {
+    "slack": {}
   }
 }
