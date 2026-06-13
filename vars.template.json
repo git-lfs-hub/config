@@ -9,7 +9,8 @@
   "lfs": { "server": "{{cloudflare.workerName}}.{{cloudflare.accountSlug}}.workers.dev" },
   "s3": {
     "endpoint": "https://{{cloudflare.accountId}}.r2.cloudflarestorage.com",
-    "bucket": "lfs-objects"
+    "bucket": "lfs-objects",
+    "backup": { "region": "", "bucket": "" }
   },
   "cloudflare": {
     "workerName": "lfs-server",
