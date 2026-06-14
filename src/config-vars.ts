@@ -33,11 +33,16 @@ function readDotConfigEnv(dir: string): string | undefined {
 }
 
 export function configVars({ varsDir, env }: { varsDir: string; env?: string }): void {
-  // Precedence: GLH_VARS_JSON env > vars.input.json > vars.json.
+  // Precedence: --env flag > GLH_ENV > .config.json.
+  const resolvedEnv =
+    (env ?? process.env.GLH_ENV ?? readDotConfigEnv(varsDir))?.trim() || undefined;
+
+  // Precedence: GLH_VARS_JSON env > vars.input.{env}.json > vars.input.json > vars.json.
   const varsJson = process.env.GLH_VARS_JSON;
   const inputPath = varsJson
     ? '$GLH_VARS_JSON'
-    : (existing(resolve(varsDir, 'vars.input.json')) ??
+    : ((resolvedEnv && existing(resolve(varsDir, `vars.input.${resolvedEnv}.json`))) ??
+      existing(resolve(varsDir, 'vars.input.json')) ??
       existing(resolve(varsDir, 'vars.json')) ??
       error(`No vars.input.json or vars.json in ${varsDir}, and GLH_VARS_JSON unset`));
 
@@ -48,8 +53,6 @@ export function configVars({ varsDir, env }: { varsDir: string; env?: string }):
   // Suffix the source fields (workerName, admin.workerName, bucket) before
   // resolving defaults, so derived fields (lfs.server, github.appHome,
   // github.adminHome) cascade from the suffixed names.
-  // Precedence: --env flag > GLH_ENV > .config.json.
-  const resolvedEnv = env ?? process.env.GLH_ENV ?? readDotConfigEnv(varsDir);
   const templateDefaults = readVarsFile(pkg, 'vars.template.json');
   const envInput = applyEnv(input, resolvedEnv, templateDefaults);
 

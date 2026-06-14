@@ -151,6 +151,34 @@ describe('configVars()', () => {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
+
+  test('vars.input.{env}.json takes precedence over vars.input.json', () => {
+    const cwd = setupCwd();
+    try {
+      writeFileSync(join(cwd, 'vars.input.json'), JSON.stringify(FULL_INPUT));
+      writeFileSync(
+        join(cwd, 'vars.input.staging.json'),
+        JSON.stringify({ ...FULL_INPUT, org: 'Staging' }),
+      );
+      configVars({ varsDir: cwd, env: 'staging' });
+      const merged = JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
+      expect(merged.org).toBe('Staging');
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test('falls back to vars.input.json when vars.input.{env}.json absent', () => {
+    const cwd = setupCwd();
+    try {
+      writeFileSync(join(cwd, 'vars.input.json'), JSON.stringify(FULL_INPUT));
+      configVars({ varsDir: cwd, env: 'staging' });
+      const merged = JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
+      expect(merged.org).toBe('Test');
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('configVars env resolution', () => {
