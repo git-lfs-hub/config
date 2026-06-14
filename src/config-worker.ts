@@ -1,9 +1,14 @@
 /**
  * Renders a worker's {workerDir}/wrangler.jsonc from {workerDir}/vars.json (already
  * merged by configVars; env recovered from its `env` field for the suffix safety net).
- * Also renders github-app.md when a github-app.template.md is present — server has
- * one, admin doesn't. Reads only its own dir; never reaches up for a parent's vars.
+ * Also renders each `<name>.md` when a `<name>.template.md` is present (server has
+ * github-app; admin has github-app + slack-app + cold-storage). Reads only its own dir;
+ * never reaches up for a parent's vars.
  */
+
+// Markdown setup walkthroughs rendered alongside wrangler.jsonc (when their template exists
+// in the worker dir).
+const DOC_TEMPLATES = ['github-app', 'slack-app', 'cold-storage'] as const;
 
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -22,7 +27,9 @@ export function configWorker({ workerDir }: { workerDir: string }): void {
     'wrangler.jsonc',
     enforceEnvSuffixes(render('wrangler.template.jsonc'), env),
   );
-  if (existsSync(resolve(workerDir, 'github-app.template.md'))) {
-    writeUtf8File(workerDir, 'github-app.md', render('github-app.template.md'));
+  for (const name of DOC_TEMPLATES) {
+    if (existsSync(resolve(workerDir, `${name}.template.md`))) {
+      writeUtf8File(workerDir, `${name}.md`, render(`${name}.template.md`));
+    }
   }
 }

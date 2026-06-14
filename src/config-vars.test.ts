@@ -151,12 +151,45 @@ describe('configVars()', () => {
       rmSync(cwd, { recursive: true, force: true });
     }
   });
+
+  test('vars.input.{env}.json takes precedence over vars.input.json', () => {
+    const cwd = setupCwd();
+    try {
+      writeFileSync(join(cwd, 'vars.input.json'), JSON.stringify(FULL_INPUT));
+      writeFileSync(
+        join(cwd, 'vars.input.staging.json'),
+        JSON.stringify({ ...FULL_INPUT, org: 'Staging' }),
+      );
+      process.env.GLH_ENV = 'staging';
+      configVars({ varsDir: cwd });
+      const merged = JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
+      expect(merged.org).toBe('Staging');
+    } finally {
+      delete process.env.GLH_ENV;
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  test('falls back to vars.input.json when vars.input.{env}.json absent', () => {
+    const cwd = setupCwd();
+    try {
+      writeFileSync(join(cwd, 'vars.input.json'), JSON.stringify(FULL_INPUT));
+      process.env.GLH_ENV = 'staging';
+      configVars({ varsDir: cwd });
+      const merged = JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
+      expect(merged.org).toBe('Test');
+    } finally {
+      delete process.env.GLH_ENV;
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('configVars env resolution', () => {
   function run(cwd: string, input: Record<string, unknown>, opts: { env?: string }) {
+    if (opts.env) process.env.GLH_ENV = opts.env;
     writeFileSync(join(cwd, 'vars.input.json'), JSON.stringify(input));
-    configVars({ varsDir: cwd, ...opts });
+    configVars({ varsDir: cwd });
     return JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
   }
 
@@ -168,7 +201,7 @@ describe('configVars env resolution', () => {
     delete process.env.GLH_ENV;
   });
 
-  test('--env flag suffixes worker names + bucket', () => {
+  test('GLH_ENV suffixes worker names + bucket', () => {
     const cwd = setupCwd();
     try {
       const vars = run(cwd, FULL_INPUT, { env: 'staging' });
@@ -180,7 +213,7 @@ describe('configVars env resolution', () => {
     }
   });
 
-  test('--env cascades into derived lfs.server + github.appHome + adminHome', () => {
+  test('GLH_ENV cascades into derived lfs.server + github.appHome + adminHome', () => {
     const cwd = setupCwd();
     try {
       const vars = run(cwd, FULL_INPUT, { env: 'staging' });
@@ -207,7 +240,7 @@ describe('configVars env resolution', () => {
     }
   });
 
-  test('GLH_ENV used when no flag', () => {
+  test('GLH_ENV used when set', () => {
     const cwd = setupCwd();
     try {
       process.env.GLH_ENV = 'staging';
@@ -218,18 +251,7 @@ describe('configVars env resolution', () => {
     }
   });
 
-  test('flag overrides GLH_ENV', () => {
-    const cwd = setupCwd();
-    try {
-      process.env.GLH_ENV = 'fromenv';
-      const vars = run(cwd, FULL_INPUT, { env: 'staging' });
-      expect(vars.cloudflare.workerName).toBe('lfs-server-staging');
-    } finally {
-      rmSync(cwd, { recursive: true, force: true });
-    }
-  });
-
-  test('.config.json env used when no flag or GLH_ENV', () => {
+  test('.config.json env used when no GLH_ENV', () => {
     const cwd = setupCwd();
     try {
       writeDotConfig(cwd, 'staging');
@@ -246,17 +268,6 @@ describe('configVars env resolution', () => {
       writeDotConfig(cwd, 'fromfile');
       process.env.GLH_ENV = 'staging';
       const vars = run(cwd, FULL_INPUT, {});
-      expect(vars.cloudflare.workerName).toBe('lfs-server-staging');
-    } finally {
-      rmSync(cwd, { recursive: true, force: true });
-    }
-  });
-
-  test('flag overrides .config.json', () => {
-    const cwd = setupCwd();
-    try {
-      writeDotConfig(cwd, 'fromfile');
-      const vars = run(cwd, FULL_INPUT, { env: 'staging' });
       expect(vars.cloudflare.workerName).toBe('lfs-server-staging');
     } finally {
       rmSync(cwd, { recursive: true, force: true });
@@ -348,14 +359,16 @@ describe('configVars GLH_VARS_JSON', () => {
     }
   });
 
-  test('combines with --env staging', () => {
+  test('combines with GLH_ENV staging', () => {
     const cwd = setupCwd();
     try {
       process.env.GLH_VARS_JSON = JSON.stringify(FULL_INPUT);
-      configVars({ varsDir: cwd, env: 'staging' });
+      process.env.GLH_ENV = 'staging';
+      configVars({ varsDir: cwd });
       const vars = JSON.parse(readFileSync(join(cwd, 'vars.json'), 'utf8'));
       expect(vars.cloudflare.workerName).toBe('lfs-server-staging');
     } finally {
+      delete process.env.GLH_ENV;
       rmSync(cwd, { recursive: true, force: true });
     }
   });

@@ -51,7 +51,14 @@
       "type": "object",
       "properties": {
         "endpoint": { "type": "string" },
-        "bucket": { "type": "string" }
+        "bucket": { "type": "string" },
+        "backup": {
+          "type": "object",
+          "properties": {
+            "region": { "type": "string" },
+            "bucket": { "type": "string" }
+          }
+        }
       }
     }
   },
