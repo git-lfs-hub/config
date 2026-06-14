@@ -60,13 +60,13 @@ Extra keys are allowed and pass through to templates and docs.
 Resolve the input vars, merge with package defaults, apply the deploy env, validate, write `vars.json`, render `wrangler[.admin].jsonc` (skipped if it exists) and `github-app.md`.
 
 - **`--cwd <dir>`** (default `.`): deploy checkout root.
-- **`--env <name>`**: deploy env (e.g. `--env staging`). See [Deploy env](#deploy-env).
 
 **Input vars** are read from the first available source (highest precedence first):
 
 1. **`GLH_VARS_JSON`** env var: the vars as a JSON string.
-2. **`vars.input.json`** in `--cwd`.
-3. **`vars.json`** in `--cwd` (re-merged, re-validated, rewritten).
+2. **`vars.input.{env}.json`** in `--cwd` (when a [deploy env](#deploy-env) is set).
+3. **`vars.input.json`** in `--cwd`.
+4. **`vars.json`** in `--cwd` (re-merged, re-validated, rewritten).
 
 If none are present, fails with `No vars.input.json or vars.json in <ws>, and GLH_VARS_JSON unset`.
 
@@ -74,9 +74,8 @@ If none are present, fails with `No vars.input.json or vars.json in <ws>, and GL
 
 The deploy env appends a `-{env}` suffix to `cloudflare.workerName`, `cloudflare.admin.workerName`, and `s3.bucket`. Resolved from the first available source (highest precedence first):
 
-1. **`--env <name>`** CLI flag.
-2. **`GLH_ENV`** env var.
-3. **`env`** field in **`.config.json`** at the deploy root (on-disk pin; survives turbo's strict-env stripping that `GLH_ENV` can't).
+1. **`GLH_ENV`** env var.
+2. **`env`** field in **`.config.json`** at the deploy root (on-disk pin; survives turbo's strict-env stripping that `GLH_ENV` can't).
 
 `""`, `production`, `prod`, or unset mean production and add **no** suffix; any other value appends `-{value}` (e.g. `staging` → `…-staging`).
 

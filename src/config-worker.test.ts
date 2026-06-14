@@ -27,7 +27,12 @@ function setupWorker({
   if (githubApp) writeFileSync(join(dir, 'github-app.template.md'), `# {{org}}\n`);
   if (slackApp) writeFileSync(join(dir, 'slack-app.template.md'), `# {{org}} Slack\n`);
   writeFileSync(join(dir, 'vars.input.json'), JSON.stringify(FULL_INPUT));
-  configVars({ varsDir: dir, env });
+  if (env) process.env.GLH_ENV = env;
+  try {
+    configVars({ varsDir: dir });
+  } finally {
+    delete process.env.GLH_ENV;
+  }
   return dir;
 }
 

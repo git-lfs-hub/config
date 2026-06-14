@@ -7,11 +7,8 @@ import { configVars } from './config-vars';
 import { configWorker } from './config-worker';
 import { validate } from './validate';
 
-const { values, positionals } = parseArgs({
+const { positionals } = parseArgs({
   args: process.argv.slice(2),
-  options: {
-    env: { type: 'string' },
-  },
   allowPositionals: true,
 });
 
@@ -20,7 +17,7 @@ const dir = resolve(positionals[1] ?? '.');
 
 switch (cmd) {
   case 'vars':
-    configVars({ varsDir: dir, env: values.env });
+    configVars({ varsDir: dir });
     break;
   case 'worker':
     configWorker({ workerDir: dir });
