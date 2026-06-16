@@ -22,4 +22,5 @@ link server/public -sfn ../docs/site
 
 if [ -d admin ]; then
     link admin/vars.json -sf ../vars.json
+    rsync -ahi --out-format='sync %f -> admin/public/%f' assets/favicon.png admin/public/ | awk '!/[/]\.?$/'
 fi

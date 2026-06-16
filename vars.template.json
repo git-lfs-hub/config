@@ -28,6 +28,7 @@
     "coldStorage": ""
   },
   "admin": {
+    "title": "{{title}} Admin",
     "slack": {
       "channel": ""
     }
