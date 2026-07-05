@@ -24,3 +24,8 @@ if [ -d admin ]; then
     link admin/vars.json -sf ../vars.json
     rsync -ahi --out-format='sync %f -> admin/public/%f' assets/favicon.png admin/public/ | awk '!/[/]\.?$/'
 fi
+
+# Optional private control-tier worker; base checkouts skip it (submodule not initialized).
+if [ -d compute ]; then
+    link compute/vars.json -sf ../vars.json
+fi

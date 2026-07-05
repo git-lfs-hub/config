@@ -23,6 +23,7 @@ function envSuffixer(
 const SUFFIX_FIELDS: Array<{ path: string[]; opaque?: (v: string) => boolean }> = [
   { path: ['cloudflare', 'workerName'] },
   { path: ['cloudflare', 'admin', 'workerName'] },
+  { path: ['cloudflare', 'compute', 'workerName'] },
   { path: ['s3', 'bucket'] },
   { path: ['s3', 'backup', 'bucket'] },
   { path: ['admin', 'slack', 'channel'], opaque: isSlackChannelId },

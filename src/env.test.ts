@@ -4,7 +4,11 @@ import { applyEnv, enforceEnvSuffixes } from './env';
 
 describe('applyEnv', () => {
   const base = {
-    cloudflare: { workerName: 'lfs-server', admin: { workerName: 'lfs-admin' } },
+    cloudflare: {
+      workerName: 'lfs-server',
+      admin: { workerName: 'lfs-admin' },
+      compute: { workerName: 'lfs-compute' },
+    },
     s3: { bucket: 'lfs-objects' },
   };
 
@@ -13,9 +17,11 @@ describe('applyEnv', () => {
     const cloudflare = v.cloudflare as {
       workerName: string;
       admin: { workerName: string };
+      compute: { workerName: string };
     };
     expect(cloudflare.workerName).toBe('lfs-server-staging');
     expect(cloudflare.admin.workerName).toBe('lfs-admin-staging');
+    expect(cloudflare.compute.workerName).toBe('lfs-compute-staging');
     expect((v.s3 as Record<string, unknown>).bucket).toBe('lfs-objects-staging');
     expect(v.env).toBe('staging');
   });

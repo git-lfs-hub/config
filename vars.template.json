@@ -17,6 +17,9 @@
     "admin": {
       "workerName": "lfs-admin"
     },
+    "compute": {
+      "workerName": "lfs-compute"
+    },
     "kv": {
       "githubCacheId": ""
     }
@@ -32,5 +35,8 @@
     "slack": {
       "channel": ""
     }
+  },
+  "compute": {
+    "executionClasses": {}
   }
 }
