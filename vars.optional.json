@@ -4,5 +4,6 @@
     "user": "",
     "orgs": ""
   },
-  "sentry": { "org": "" }
+  "sentry": { "org": "" },
+  "compute": { "webhook": { "url": "" } }
 }
