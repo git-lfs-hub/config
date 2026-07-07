@@ -37,6 +37,7 @@
     }
   },
   "compute": {
-    "executionClasses": {}
+    "executionClasses": {},
+    "projectsOrg": ""
   }
 }
