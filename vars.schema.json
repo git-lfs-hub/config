@@ -26,6 +26,7 @@
         "orgs": {
           "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
         },
+        "orgsMap": { "type": "string" },
         "user": { "type": "string" },
         "home": { "type": "string" },
         "appHome": { "type": "string" }
